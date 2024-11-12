@@ -635,7 +635,7 @@ final class WOOF_HELPER {
         $tax_query = woof()->get_tax_query($additional_taxes);
 
         $current_term = woof()->get_really_current_term();
-        if (!empty($current_term)) {
+        if (!empty($current_term) && isset($current_term->taxonomy)) {
             $tax_query[] = array(
                 'taxonomy' => $current_term->taxonomy,
                 'field' => 'slug', //id

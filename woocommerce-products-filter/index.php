@@ -4,10 +4,10 @@
   Plugin URI: https://products-filter.com/
   Description: HUSKY - WooCommerce Products Filter Professional. Flexible, easy and robust products filter for WooCommerce store site!
   Requires at least: WP 6.0
-  Tested up to: WP 6.6
+  Tested up to: WP 6.7
   Author: realmag777
   Author URI: https://pluginus.net/
-  Version: 1.3.6.3
+  Version: 1.3.6.4
   Requires PHP: 7.4
   Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
   Text Domain: woocommerce-products-filter
@@ -56,7 +56,7 @@ define('WOOF_PATH', plugin_dir_path(__FILE__));
 define('WOOF_LINK', plugin_dir_url(__FILE__));
 define('WOOF_PLUGIN_NAME', plugin_basename(__FILE__));
 define('WOOF_EXT_PATH', WOOF_PATH . 'ext/');
-define('WOOF_VERSION', '1.3.6.3');
+define('WOOF_VERSION', '1.3.6.4');
 //define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define('WOOF_MIN_WOOCOMMERCE_VERSION', '6.0');
 //classes
@@ -74,7 +74,7 @@ include WOOF_PATH . 'lib/alert/index.php';
 //***
 include WOOF_PATH . 'installer/first_settings.php';
 
-//23-09-2024
+//12-11-2024
 final class WOOF {
 
     public $settings = array();
@@ -1981,9 +1981,14 @@ final class WOOF {
                     continue;
                 }
                 if ($woof_text_urlencode) {
-                    $tmp[WOOF_HELPER::escape($key)] = urlencode(WOOF_HELPER::escape($value));
+                    $tmp[WOOF_HELPER::escape(trim($key, "/"))] = urlencode(WOOF_HELPER::escape($value));
                 } else {
-                    $tmp[WOOF_HELPER::escape($key)] = WOOF_HELPER::escape($value);
+                    $tmp[WOOF_HELPER::escape(trim($key, "/"))] = WOOF_HELPER::escape($value);
+                }
+
+                //for security
+                if ('woof_text' == $key) {
+                    $tmp[$key] = str_replace('+', ' ', $tmp[$key]);
                 }
             }
             $data = $tmp;
@@ -2543,7 +2548,7 @@ final class WOOF {
                         }
                         ?>
 
-                        <?php //wc_get_template('loop/loop-end.php');                                                                                                                          ?>
+                        <?php //wc_get_template('loop/loop-end.php');                                                                                                                            ?>
 
                         <?php
                         //woo_pagenav(); - for wp theme canvas
@@ -2639,6 +2644,9 @@ final class WOOF {
                 $query_array = WOOF_HELPER::safe_parse_str($link);
                 $_GET = apply_filters('woof_draw_products_get_args', wc_clean(array_merge($query_array, wc_clean($_GET))), WOOF_REQUEST::get('link'));
             }
+
+            //Fixing the vulnerability in woocommerce-ordering
+            $_GET = array_map(fn($value) => is_string($value)? preg_replace("/\s+/", "+", $value):$value, $_GET);
 
             $product_ids = "";
             if (WOOF_REQUEST::isset('turbo_mode_ids')) {
@@ -3439,7 +3447,8 @@ final class WOOF {
                             preg_match('/(.+)?' . trim($pattern_url) . '(.+)?/', $server_link_mask, $matches);
                             $init_tmp = !empty($matches);
                         } else {
-                            $init_tmp = ($pattern_url == $server_link_mask);
+                            $server_link_mask = explode('?', $server_link_mask);
+                            $init_tmp = ($pattern_url == $server_link_mask[0]);
                         }
 
                         if (isset($this->settings['init_only_on_reverse']) AND $this->settings['init_only_on_reverse']) {
