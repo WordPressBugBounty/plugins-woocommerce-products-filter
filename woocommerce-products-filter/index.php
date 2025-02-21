@@ -7,14 +7,14 @@
   Tested up to: WP 6.7
   Author: realmag777
   Author URI: https://pluginus.net/
-  Version: 1.3.6.4
+  Version: 1.3.6.5
   Requires PHP: 7.4
   Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
   Text Domain: woocommerce-products-filter
   Domain Path: /languages
   Forum URI: https://pluginus.net/support/forum/woof-woocommerce-products-filter/
   WC requires at least: 6.0
-  WC tested up to: 9.3
+  WC tested up to: 9.6
  */
 
 //update_option('woof_settings', []);//dev: nearly absolute reset of the plugin settings
@@ -56,7 +56,7 @@ define('WOOF_PATH', plugin_dir_path(__FILE__));
 define('WOOF_LINK', plugin_dir_url(__FILE__));
 define('WOOF_PLUGIN_NAME', plugin_basename(__FILE__));
 define('WOOF_EXT_PATH', WOOF_PATH . 'ext/');
-define('WOOF_VERSION', '1.3.6.4');
+define('WOOF_VERSION', '1.3.6.5');
 //define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define('WOOF_MIN_WOOCOMMERCE_VERSION', '6.0');
 //classes
@@ -74,7 +74,7 @@ include WOOF_PATH . 'lib/alert/index.php';
 //***
 include WOOF_PATH . 'installer/first_settings.php';
 
-//12-11-2024
+//21-02-2025
 final class WOOF {
 
     public $settings = array();
@@ -1827,8 +1827,10 @@ final class WOOF {
 
     public function woocommerce_shortcode_products_query($query_args, $attr, $type = "") {
         if (WOOF_REQUEST::get('override_no_products')) {
+            $query_args = $this->clear_tax_query($query_args, $this->get_request_data());
             return $query_args;
         }
+        
         if ($this->is_isset_in_request_data($this->get_swoof_search_slug())) {
             WOOF_REQUEST::set('woof_products_doing', 1);
             $query_args['tax_query'] = array_merge($query_args['tax_query'], $this->get_tax_query(''));
@@ -2646,7 +2648,7 @@ final class WOOF {
             }
 
             //Fixing the vulnerability in woocommerce-ordering
-            $_GET = array_map(fn($value) => is_string($value)? preg_replace("/\s+/", "+", $value):$value, $_GET);
+            $_GET = array_map(fn($value) => is_string($value) ? preg_replace("/\s+/", "+", $value) : $value, $_GET);
 
             $product_ids = "";
             if (WOOF_REQUEST::isset('turbo_mode_ids')) {
@@ -3447,8 +3449,8 @@ final class WOOF {
                             preg_match('/(.+)?' . trim($pattern_url) . '(.+)?/', $server_link_mask, $matches);
                             $init_tmp = !empty($matches);
                         } else {
-                            $server_link_mask = explode('?', $server_link_mask);
-                            $init_tmp = ($pattern_url == $server_link_mask[0]);
+                            $server_link_mask_array = explode('?', $server_link_mask);
+                            $init_tmp = ($pattern_url == $server_link_mask_array[0]);
                         }
 
                         if (isset($this->settings['init_only_on_reverse']) AND $this->settings['init_only_on_reverse']) {
@@ -3679,7 +3681,7 @@ final class WOOF {
             foreach ($shortcodes as $tag) {
                 add_shortcode(esc_attr($tag) . "_woof", array($this, 'woof_ajax_shortcode'));
                 add_action('woocommerce_shortcode_' . $tag . '_loop_no_results', function () {
-                    do_action('woocommerce_no_products_found');
+                    //do_action('woocommerce_no_products_found');
                 }, 10, 1);
             }
         }
@@ -3970,6 +3972,20 @@ final class WOOF {
                     'square_square'
                 )
             );
+        }
+
+        private function clear_tax_query($query, $tax_to_delete) {
+            if (!isset($query['tax_query']) && !is_array($tax_to_delete)) {
+                return $query;
+            }
+
+            foreach ($query['tax_query'] as $tax_index => $tax_data) {
+                if (isset($tax_data['taxonomy']) && isset($tax_to_delete[$tax_data['taxonomy']])) {
+                    unset($query['tax_query'][$tax_index]);
+                }
+            }
+
+            return $query;
         }
     }
 

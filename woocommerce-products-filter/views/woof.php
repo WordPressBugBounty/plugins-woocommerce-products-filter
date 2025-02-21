@@ -542,8 +542,8 @@ if (!function_exists('woof_print_item_by_key')) {
                          if ($image_mb_close != -1 && empty($image_mb_close)) {
                              $image_mb_close = WOOF_LINK . "img/close_filter.png";
                          }
-                         $text_mb_open = (isset($this->settings['text_mobile_behavior_open'])) ? $this->settings['text_mobile_behavior_open'] : esc_html__('Open filter', 'woocommerce-products-filter');
-                         $text_mb_close = (isset($this->settings['text_mobile_behavior_close'])) ? $this->settings['text_mobile_behavior_close'] : esc_html__('Close filter', 'woocommerce-products-filter');
+                         $text_mb_open = (isset($this->settings['text_mobile_behavior_open'])) ? WOOF_HELPER::wpml_translate(null, $this->settings['text_mobile_behavior_open'] ) : esc_html__('Open filter', 'woocommerce-products-filter');
+                         $text_mb_close = (isset($this->settings['text_mobile_behavior_close'])) ? WOOF_HELPER::wpml_translate(null, $this->settings['text_mobile_behavior_close'] ) : esc_html__('Close filter', 'woocommerce-products-filter');
                          ?>
                     <div class="woof_show_mobile_filter" data-sid="<?php echo esc_attr($sid); ?>">
                         <?php if ($image_mb_open != -1) : ?>

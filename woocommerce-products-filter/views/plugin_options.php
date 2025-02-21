@@ -26,8 +26,21 @@
             </div>
             <div>
                 <?php if ($this->show_notes): ?>
+
                     <br>
-                    <a href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter/11498469" target="_blank" class="woof-button"><span class="icon-upload"></span><?php esc_html_e('Upgrade', 'woocommerce-products-filter') ?></a>
+                    <?php if (time() < 1733094000): ?>
+
+                        <a href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter/11498469" target="_blank" class="">
+                            <img src="https://pluginus.net/wp-content/uploads/2024/11/envato-cybersale-2024.png" width="120" alt="Cybermonday AND Blackfriday" />
+                        </a>
+
+
+                    <?php else: ?>
+
+                        <a href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter/11498469" target="_blank" class="woof-button"><span class="icon-upload"></span><?php esc_html_e('Upgrade', 'woocommerce-products-filter') ?></a>
+
+                    <?php endif; ?>
+
                 <?php endif; ?>
             </div>
         </div>
