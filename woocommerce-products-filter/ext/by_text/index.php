@@ -703,7 +703,7 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 
         global $wpdb;
 
-        if (!is_array($search_terms)) {
+        if (!is_array($search_terms)) { 
             $search_terms = htmlspecialchars_decode($search_terms);
             $search_terms = explode(' ', $search_terms);
         }
@@ -992,7 +992,8 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
         if (isset($this->options['template']) && !empty($this->options['template'])) {
             $template = $this->options['template'];
         }
-
+		$template = sanitize_key($template);
+		
         $path = $this->get_ext_path() . "views/templates/{$template}.php"; //templates inside the plugin
 
         if (!file_exists($path)) {
