@@ -415,7 +415,6 @@ function woof_step_filter_check_state(_this){
         if(i=='min_price'|| i=='max_price'){
 	     
             if(jQuery(_this).hasClass('woof_price_filter')){     
-		//alert();
                 stat.has = true;
                 stat.key = ['min_price','max_price']; 
             }

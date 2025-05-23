@@ -133,7 +133,7 @@ if (!count($all_options)) {
                             <label class="woof_radio_label <?php if ($key == $woof_value): ?>woof_radio_label_selected<?php endif; ?>" for="<?php echo esc_attr('woof_' . $key . '_' . $inique_id) ?>"><?php
                         ?><?php echo wp_kses_post(wp_unslash($option['name'])) ?></label>
 
-                            <a href="#" data-name="<?php echo esc_attr($meta_key) ?>" data-term-id="<?php echo esc_attr($key) ?>" style="<?php if ($key != $woof_value): ?>display: none;<?php endif; ?>" class="woof_radio_term_reset  <?php if ($key == $woof_value): ?>woof_radio_term_reset_visible<?php endif; ?> woof_radio_term_reset_<?php echo esc_attr($key) ?>">
+                            <a href="#" rel="nofollow" data-name="<?php echo esc_attr($meta_key) ?>" data-term-id="<?php echo esc_attr($key) ?>" style="<?php if ($key != $woof_value): ?>display: none;<?php endif; ?>" class="woof_radio_term_reset  <?php if ($key == $woof_value): ?>woof_radio_term_reset_visible<?php endif; ?> woof_radio_term_reset_<?php echo esc_attr($key) ?>">
                                 <img src="<?php echo esc_url(woof()->settings['delete_image']) ?>" height="12" width="12" alt="<?php esc_html_e("Delete", 'woocommerce-products-filter') ?>" />
                             </a>
 

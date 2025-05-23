@@ -23,25 +23,27 @@ export default class Selector {
             titles_arr.push(value.title);
             titles_obj[value.title] = key;
         }
-
         //sort
         if (titles_arr.length > 0) {
             titles_arr.sort(function (a, b) {
-                return a.localeCompare(b);
-            })
+                if (typeof a === 'string' && typeof b === 'string') {
+                    return a.localeCompare(b);
+                }
+                return a - b;
+            });
 
             let counter = 1;
-            titles_arr.forEach(title => {
+            titles_arr.forEach((title) => {
                 this.add(titles_obj[title], title, counter);
                 counter++;
-            })
+            });
         }
 
         this.builder.appendChild(this.select);
 
-        this.select.addEventListener('change', e => {
-
-            let max_count = (typeof woof_front_builder_is_demo !== 'undefined') ? 10 : 1000;
+        this.select.addEventListener('change', (e) => {
+            let max_count =
+                typeof woof_front_builder_is_demo !== 'undefined' ? 10 : 1000;
 
             if (this.builder.list.list.childElementCount >= max_count) {
                 alert('In demo mode there is limit to 10 filter sections');
@@ -50,7 +52,9 @@ export default class Selector {
 
             if (this.select.value.length > 0) {
                 this.builder.append_to_list(this.select.value);
-                [...this.select.options].find(option => option.selected).remove();
+                [...this.select.options]
+                    .find((option) => option.selected)
+                    .remove();
             }
         });
 
@@ -58,9 +62,13 @@ export default class Selector {
     }
 
     add(key, value, counter = 0) {
-        let option = Helper.create_element('option', {
-            value: key
-        }, value);
+        let option = Helper.create_element(
+            'option',
+            {
+                value: key,
+            },
+            value
+        );
 
         if (counter === 0) {
             option.setAttribute('hidden', '');

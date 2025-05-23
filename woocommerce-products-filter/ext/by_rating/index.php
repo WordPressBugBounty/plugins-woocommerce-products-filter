@@ -39,12 +39,16 @@ final class WOOF_EXT_BY_RATING extends WOOF_EXT {
         add_filter('woof_add_items_keys', array($this, 'woof_add_items_keys'));
         add_action('woof_print_html_type_options_' . $this->html_type, array($this, 'woof_print_html_type_options'), 10, 1);
         add_action('woof_print_html_type_' . $this->html_type, array($this, 'print_html_type'), 10, 1);
+		add_action('wp_head', array($this, 'wp_head'));
 		
-		self::$includes['js_lang_custom'][$this->index] = esc_html__('By rating', 'woocommerce-products-filter');
+		self::$includes['js_lang_custom'][$this->index] = '';
 
     }
 
-
+	public function wp_head () {
+		self::$includes['js_lang_custom'][$this->index] = esc_html__('By rating', 'woocommerce-products-filter');
+	}
+	
     //settings page hook
     public function woof_print_html_type_options()
     {

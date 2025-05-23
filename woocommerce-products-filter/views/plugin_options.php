@@ -25,6 +25,7 @@
                 <i><?php printf(esc_html__('Actualized for WooCommerce v.%s.x', 'woocommerce-products-filter'), esc_html(WOOCOMMERCE_VERSION)) ?></i><br />
             </div>
             <div>
+
                 <?php if ($this->show_notes): ?>
 
                     <br>
@@ -42,6 +43,7 @@
                     <?php endif; ?>
 
                 <?php endif; ?>
+
             </div>
         </div>
 
@@ -320,6 +322,44 @@
                         </div>
                     </div><!--/ .woof-control-section-->
 
+                    <div class="woof-control-section">
+
+                        <h4><?php esc_html_e('Preserve the state of unchecked checkbox/radio hierarchy', 'woocommerce-products-filter') ?></h4>
+
+                        <div class="woof-control-container">
+
+                            <div class="woof-control">
+
+                                <?php
+                                $use_save_states = array(
+                                    0 => esc_html__('No', 'woocommerce-products-filter'),
+                                    1 => esc_html__('Yes', 'woocommerce-products-filter')
+                                );
+
+                                if (!array_key_exists('save_state_checkbox', $woof_settings)) {
+                                    $woof_settings['save_state_checkbox'] = 1;
+                                }
+
+                                $save_state = intval($woof_settings['save_state_checkbox']);
+                                ?>
+
+                                <div class="select-wrap">
+                                    <select name="woof_settings[save_state_checkbox]" class="chosen_select">
+                                        <?php foreach ($use_save_states as $key => $value) : ?>
+                                            <option value="<?php echo esc_attr($key) ?>" <?php selected($save_state == $key) ?>><?php esc_html_e($value) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+
+                            </div>
+                            <div class="woof-description">
+                                <p class="description">
+                                    <?php esc_html_e('Ability to retain the open/closed state of hierarchy blocks with unchecked checkboxes and radio buttons', 'woocommerce-products-filter') ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div><!--/ .woof-control-section-->
 
                     <div class="woof-control-section" <?php if ($skin != 'default'): ?>style="display: none;"<?php endif; ?>>
 
@@ -1352,7 +1392,7 @@
                                             ?>
 
                                             <?php
-                                            if (!isset($woof_settings['listen_catalog_visibility']) OR empty($woof_settings['listen_catalog_visibility'])) {
+                                            if (!isset($woof_settings['listen_catalog_visibility']) OR $woof_settings['listen_catalog_visibility'] != 0) {
                                                 $woof_settings['listen_catalog_visibility'] = 1;
                                             }
                                             ?>

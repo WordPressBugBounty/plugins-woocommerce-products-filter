@@ -349,10 +349,14 @@ class WOOF_SEO {
         if ($this->is_search_going()) {
 
             if ($this->do_index()) {
+				add_filter( 'wpseo_canonical', '__return_false' );
                 $current_url = $this->get_cleared_url(true);
             }
         }
 
+        $url_array  = explode('?', $current_url);
+        $current_url = $url_array[0];
+        
         $canonical_link = apply_filters('woof_seo_canonical', $current_url);
         echo sprintf('<link rel="canonical" href="%s" />', esc_attr($canonical_link)) . "\r\n";
     }

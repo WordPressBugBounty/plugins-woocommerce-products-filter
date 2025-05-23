@@ -113,7 +113,7 @@ class WOOF_ADV {
                 alert_w.on('click', '.notice-dismiss', function (e) {
                     $.post(ajaxurl, {action: 'woof_dismiss_alert',
                         alert: 'woocommerce_currency_switcher',
-                        sec: <?php echo esc_attr(wp_create_nonce('woof_dissmiss_alert')) ?>
+                        sec: '<?php echo esc_attr(wp_create_nonce('woof_dissmiss_alert')) ?>'
                     });
                 });
 
@@ -158,7 +158,7 @@ class WOOF_ADV {
                     $.post(ajaxurl, {
                         action: 'woof_dismiss_alert',
                         alert: 'woocommerce_bulk_editor',
-                        sec: <?php echo esc_attr(wp_create_nonce('woof_dissmiss_alert')) ?>
+                        sec: '<?php echo esc_attr(wp_create_nonce('woof_dissmiss_alert')) ?>'
                     });
                 });
 
@@ -203,7 +203,7 @@ class WOOF_ADV {
                     $.post(ajaxurl, {
                         action: 'woof_dismiss_alert',
                         alert: 'woot_products_tables',
-                        sec: <?php echo esc_attr(wp_create_nonce('woof_dissmiss_alert')) ?>
+                        sec: '<?php echo esc_attr(wp_create_nonce('woof_dissmiss_alert')) ?>'
                     });
                 });
 

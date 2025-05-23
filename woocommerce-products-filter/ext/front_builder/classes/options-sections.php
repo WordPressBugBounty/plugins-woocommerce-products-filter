@@ -12,6 +12,8 @@ final class WOOF_FRONT_BUILDER_OPTIONS_SECTIONS {
     private $ext_path = null;
     private $is_admin = null;
 
+    public static $options = array();
+
     public function __construct($db, $table, $ext_path, $demo, $is_admin) {
         $this->db = $db;
         $this->table = $table;
@@ -91,7 +93,13 @@ final class WOOF_FRONT_BUILDER_OPTIONS_SECTIONS {
         }
 
 
-        $options = require $this->ext_path . "options/sections/{$options_file}.php";
+        if ( !isset(self::$options[$options_file]) ) {
+            $options = require $this->ext_path . "options/sections/{$options_file}.php";
+            self::$options[$options_file] = $options;
+        } else {
+            $options = self::$options[$options_file];
+        }
+
         $options_data = $this->prepare_data($this->get_options_db($name), $section_key)[$section_key];
 
         if (!empty($options_data)) {

@@ -43,10 +43,11 @@ final class WOOF_EXT_BY_ONSALES extends WOOF_EXT {
         self::$includes['js']['woof_' . $this->html_type . '_html_items'] = $this->get_ext_link() . 'js/' . $this->html_type . '.js';
         self::$includes['css']['woof_' . $this->html_type . '_html_items'] = $this->get_ext_link() . 'css/' . $this->html_type . '.css';
         self::$includes['js_init_functions'][$this->html_type] = 'woof_init_onsales';
-        self::$includes['js_lang_custom'][$this->index] = apply_filters('woof_ext_custom_title_by_onsales', esc_html__('On sale', 'woocommerce-products-filter'));
+        self::$includes['js_lang_custom'][$this->index] = '';
 
         add_filter('woof_dynamic_count_attr', array($this, 'dynamic_recount'), 30, 2);
     }
+	
 
     //settings page hook
     public function woof_print_html_type_options() {

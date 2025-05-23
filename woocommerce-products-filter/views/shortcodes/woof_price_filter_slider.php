@@ -88,7 +88,7 @@ switch ($currency_pos) {
     default:
         break;
 }
-
+$thousand_separator = wc_get_price_thousand_separator();
 //***
 //https://wordpress.org/support/topic/results-found/
 if ($preset_max < $max_price) {
@@ -139,4 +139,17 @@ if (isset($this->settings['by_price']['show_text_input']) AND $this->settings['b
     </div>
 <?php } ?>
 <label class="woof_wcga_label_hide"  for="<?php echo esc_attr($uniqid) ?>"><?php esc_html_e('Price filter', 'woocommerce-products-filter') ?></label>
-<input class="woof_range_slider" id="<?php echo esc_attr($uniqid) ?>" data-skin="<?php echo esc_attr($skin) ?>" data-taxes="<?php echo esc_attr($tax) ?>" data-min="<?php echo esc_attr($min) ?>" data-max="<?php echo esc_attr($max) ?>" data-min-now="<?php echo esc_attr($min_price) ?>" data-max-now="<?php echo esc_attr($max_price) ?>" data-step="<?php echo esc_attr($slider_step) ?>" data-slider-prefix="<?php echo esc_html($slider_prefix) ?>" data-slider-postfix="<?php echo esc_html($slider_postfix) ?>" value="" />
+<input class="woof_range_slider" 
+    id="<?php echo esc_attr($uniqid) ?>" 
+    data-skin="<?php echo esc_attr($skin) ?>" 
+    data-taxes="<?php echo esc_attr($tax) ?>" 
+    data-min="<?php echo esc_attr($min) ?>" 
+    data-max="<?php echo esc_attr($max) ?>" 
+    data-min-now="<?php echo esc_attr($min_price) ?>" 
+    data-max-now="<?php echo esc_attr($max_price) ?>" 
+    data-step="<?php echo esc_attr($slider_step) ?>" 
+    data-slider-prefix="<?php echo esc_html($slider_prefix) ?>" 
+    data-slider-postfix="<?php echo esc_html($slider_postfix) ?>" 
+    data-thousand-separator="<?php echo esc_html($thousand_separator) ?>" 
+    value="" 
+/>

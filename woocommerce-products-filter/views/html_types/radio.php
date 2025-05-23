@@ -104,7 +104,7 @@ if (!function_exists('woof_draw_radio_childs')) {
                     else
                         echo esc_html($term['name']);
                     ?><?php echo wp_kses_post(wp_unslash($count_string)) ?></label>
-                        <a href="#" data-name="<?php echo esc_attr(woof()->check_slug($tax_slug)) ?>" data-term-id="<?php echo esc_attr($term['term_id']) ?>" style="<?php if (!in_array($term['slug'], $current_request)): ?>display: none;<?php endif; ?>" class="woof_radio_term_reset <?php if (in_array($term['slug'], $current_request)): ?>woof_radio_term_reset_visible<?php endif; ?> woof_radio_term_reset_<?php echo esc_attr($term['term_id']) ?>">
+                        <a rel="nofollow" href="#" data-name="<?php echo esc_attr(woof()->check_slug($tax_slug)) ?>" data-term-id="<?php echo esc_attr($term['term_id']) ?>" style="<?php if (!in_array($term['slug'], $current_request)): ?>display: none;<?php endif; ?>" class="woof_radio_term_reset <?php if (in_array($term['slug'], $current_request)): ?>woof_radio_term_reset_visible<?php endif; ?> woof_radio_term_reset_<?php echo esc_attr($term['term_id']) ?>">
                             <img src="<?php echo esc_url(woof()->settings['delete_image']) ?>" height="12" width="12" alt="<?php esc_html_e("Delete", 'woocommerce-products-filter') ?>" />
                         </a>
                     <?php
@@ -212,7 +212,7 @@ if (!function_exists('woof_draw_radio_childs')) {
                 echo esc_html($term['name']);
             ?><?php echo wp_kses_post(wp_unslash($count_string)) ?></label>
 
-                <a href="#" data-name="<?php echo esc_attr($this->check_slug($tax_slug)) ?>" data-term-id="<?php echo esc_attr($term['term_id']) ?>" style="<?php if (!in_array($term['slug'], $current_request)): ?>display: none;<?php endif; ?>" class="woof_radio_term_reset  <?php if (in_array($term['slug'], $current_request)): ?>woof_radio_term_reset_visible<?php endif; ?> woof_radio_term_reset_<?php echo esc_attr($term['term_id']) ?>">
+                <a rel="nofollow" href="#" data-name="<?php echo esc_attr($this->check_slug($tax_slug)) ?>" data-term-id="<?php echo esc_attr($term['term_id']) ?>" style="<?php if (!in_array($term['slug'], $current_request)): ?>display: none;<?php endif; ?>" class="woof_radio_term_reset  <?php if (in_array($term['slug'], $current_request)): ?>woof_radio_term_reset_visible<?php endif; ?> woof_radio_term_reset_<?php echo esc_attr($term['term_id']) ?>">
                     <img src="<?php echo esc_url($this->settings['delete_image']) ?>" height="12" width="12" alt="<?php esc_html_e("Delete", 'woocommerce-products-filter') ?>" />
                 </a>
 

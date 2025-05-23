@@ -269,7 +269,8 @@ class WOOF_URL_PARSER {
     public function get_cleared_url($url) {
         $request_url = $this->get_url_request($url);
 
-        $url = str_replace($request_url, '/', $url);
+        $url = str_replace(rtrim($request_url, '/'), '/', rtrim($url, '/'));  
+
         return $url;
     }
 

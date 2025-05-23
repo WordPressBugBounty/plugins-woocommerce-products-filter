@@ -731,7 +731,7 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
                 $sub_sql[] = $wpdb->prepare("({$wpdb->posts}.{$terms} $search_type %s)", $like);
             }
             if ($tax_search) {
-                $sub_sql[] = $wpdb->prepare("( trm.name $search_type %s)", $word);
+                $sub_sql[] = $wpdb->prepare("( trm.name $search_type %s)", implode(' ', $search_terms));
             }
             if ($meta_search && !empty($meta_search_terms)) {
                 foreach ($meta_search_terms as $meta_term) {
@@ -741,7 +741,6 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 
             $sql[] = '(' . implode($relation, $sub_sql) . ') ';
         }
-        // prepare search on variations
 
         $res_sql = '(' . implode(' AND ', $sql) . ') ';
 

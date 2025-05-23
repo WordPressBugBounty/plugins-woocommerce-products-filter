@@ -39,13 +39,17 @@ final class WOOF_EXT_BY_FEATURED extends WOOF_EXT {
         add_action('woocommerce_product_query', array($this, 'parse_query'));
         add_action('woof_get_tax_query', array($this, "woof_get_tax_query"), 9999);
 
+		add_action('wp_head', array($this, 'wp_head'), 1);
 
         self::$includes['js']['woof_' . $this->html_type . '_html_items'] = $this->get_ext_link() . 'js/' . $this->html_type . '.js';
         self::$includes['css']['woof_' . $this->html_type . '_html_items'] = $this->get_ext_link() . 'css/' . $this->html_type . '.css';
         self::$includes['js_init_functions'][$this->html_type] = 'woof_init_featured';
-        self::$includes['js_lang_custom'][$this->index] = esc_html__('Featured products', 'woocommerce-products-filter');
+		self::$includes['js_lang_custom']['product_visibility'] = '!';
+        
     }
-
+	public function wp_head () {
+		self::$includes['js_lang_custom']['product_visibility'] = apply_filters('woof_ext_custom_title_by_featured', esc_html__('Featured products', 'woocommerce-products-filter'));
+	}
     //settings page hook
     public function woof_print_html_type_options() {
         

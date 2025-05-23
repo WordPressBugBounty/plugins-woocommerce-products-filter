@@ -4,10 +4,10 @@
   Plugin URI: https://products-filter.com/
   Description: HUSKY - WooCommerce Products Filter Professional. Flexible, easy and robust products filter for WooCommerce store site!
   Requires at least: WP 6.0
-  Tested up to: WP 6.7
+  Tested up to: WP 6.8
   Author: realmag777
   Author URI: https://pluginus.net/
-  Version: 1.3.6.6
+  Version: 1.3.7
   Requires PHP: 7.4
   Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
   Text Domain: woocommerce-products-filter
@@ -56,7 +56,7 @@ define('WOOF_PATH', plugin_dir_path(__FILE__));
 define('WOOF_LINK', plugin_dir_url(__FILE__));
 define('WOOF_PLUGIN_NAME', plugin_basename(__FILE__));
 define('WOOF_EXT_PATH', WOOF_PATH . 'ext/');
-define('WOOF_VERSION', '1.3.6.6');
+define('WOOF_VERSION', '1.3.7');
 //define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define('WOOF_MIN_WOOCOMMERCE_VERSION', '6.0');
 //classes
@@ -74,7 +74,7 @@ include WOOF_PATH . 'lib/alert/index.php';
 //***
 include WOOF_PATH . 'installer/first_settings.php';
 
-//10-03-2025
+//23-05-2025
 final class WOOF {
 
     public $settings = array();
@@ -109,9 +109,6 @@ final class WOOF {
             $this->is_activated = false;
             return NULL;
         }
-        //extensions initializating
-        $this->init_extensions();
-        $this->storage = new WOOF_STORAGE($this->storage_type);
 
         //+++
 
@@ -137,6 +134,9 @@ final class WOOF {
         if (!class_exists('WooCommerce')) {
             return;
         }
+        //extensions initializating
+        $this->init_extensions();
+        $this->storage = new WOOF_STORAGE($this->storage_type);
 
         //***
         $first_init = (int) get_option('woof_first_init', 0);
@@ -1060,6 +1060,7 @@ final class WOOF {
         var woof_toggle_closed_image = "<?php echo esc_html((isset($this->settings['toggle_closed_image']) AND !empty($this->settings['toggle_closed_image'])) ? $this->settings['toggle_closed_image'] : WOOF_LINK . 'img/plus.svg') ?>";
         var woof_toggle_opened_image = "<?php echo esc_html((isset($this->settings['toggle_opened_image']) AND !empty($this->settings['toggle_opened_image'])) ? $this->settings['toggle_opened_image'] : WOOF_LINK . 'img/minus.svg') ?>";
 
+        var woof_save_state_checkbox = <?php echo esc_html(array_key_exists('save_state_checkbox', $this->settings) ? intval($this->settings['save_state_checkbox']) : 1); ?>;
 
         /*indexes which can be displayed in red buttons panel*/
         <?php
@@ -1830,7 +1831,7 @@ final class WOOF {
             $query_args = $this->clear_tax_query($query_args, $this->get_request_data());
             return $query_args;
         }
-        
+
         if ($this->is_isset_in_request_data($this->get_swoof_search_slug())) {
             WOOF_REQUEST::set('woof_products_doing', 1);
             $query_args['tax_query'] = array_merge($query_args['tax_query'], $this->get_tax_query(''));
@@ -2550,7 +2551,7 @@ final class WOOF {
                         }
                         ?>
 
-                        <?php //wc_get_template('loop/loop-end.php');                                                                                                                            ?>
+                        <?php //wc_get_template('loop/loop-end.php');                                                                                                                              ?>
 
                         <?php
                         //woo_pagenav(); - for wp theme canvas

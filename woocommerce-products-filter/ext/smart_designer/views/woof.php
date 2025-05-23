@@ -87,6 +87,7 @@ if (!function_exists('woof_sd_assemble_terms')) {
 			if (strpos($html, '__RESET_RADIO_BTN__') !== false) {	
                 $html = str_replace('__RESET_RADIO_BTN__', WOOF_HELPER::generate_html_item('a', [
                             'href' => '#',
+							'rel' => 'nofollow',
                             'data-name' => esc_attr(woof()->check_slug($tax_slug)),
                             'data-term-id' => esc_attr($term['term_id']),
                             'style' => !in_array($term['slug'], $current_request) ? 'display: none;' : '',

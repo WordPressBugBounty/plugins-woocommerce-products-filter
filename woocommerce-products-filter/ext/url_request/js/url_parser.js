@@ -42,6 +42,13 @@ function woof_get_submit_link() {
     let vars = window.location.search;
     let url = woof_current_page_link.replace(new RegExp(/page\/(\d+)\//), "");
     
+    //remove pagination
+    let all_vars = new URLSearchParams(vars);
+    if (all_vars.has('product-page')) {
+        all_vars.delete('product-page');
+	vars = "?" + all_vars;	
+    }
+
     let url_obj = new URL(url);
     url = url_obj.origin + url_obj.pathname
 
@@ -87,7 +94,7 @@ function woof_get_submit_link() {
 
     if (url_params.size) {
 	let search_url_params = new URLSearchParams(vars);
-	
+
 	let result_url_params = new URLSearchParams({
 	    ...Object.fromEntries(search_url_params),
 	    ...Object.fromEntries(url_params)
