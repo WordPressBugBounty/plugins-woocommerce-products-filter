@@ -1315,7 +1315,7 @@
                                             ?>
 
                                             <?php
-                                            if (!isset($woof_settings['show_images_by_attr']) OR empty($woof_settings['show_images_by_attr']) OR $this->show_notes) {
+                                            if (!isset($woof_settings['show_images_by_attr']) OR empty($woof_settings['show_images_by_attr'])) {
                                                 $woof_settings['show_images_by_attr'] = array();
                                             }
                                             ?>
