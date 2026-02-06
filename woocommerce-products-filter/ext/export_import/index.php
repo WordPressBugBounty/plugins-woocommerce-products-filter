@@ -46,7 +46,7 @@ final class WOOF_EXP_IMP extends WOOF_EXT {
             'empty' => esc_html__("No data to import!", 'woocommerce-products-filter'),
         ));
 
-        wp_enqueue_script('woof_imp_exp', array('jquery', 'jquery-ui-core'));
+        wp_enqueue_script('woof_imp_exp', false, array('jquery', 'jquery-ui-core'));
 
         $data['options'] = $this->get_all_options();
         woof()->render_html_e($this->get_ext_path() . 'views/tabs_content.php', $data);
@@ -69,24 +69,24 @@ final class WOOF_EXP_IMP extends WOOF_EXT {
     }
 
     public function get_export_data() {
-		if (!current_user_can('manage_woocommerce') ) {
+        if (!current_user_can('manage_woocommerce')) {
             return;
-        }		
+        }
         if (!wp_verify_nonce($_REQUEST['_nonce'], 'woof_export_settings')) {
             die(json_encode(array()));
         }
-		
-		$data = json_decode($this->get_all_options());
-		
-		wp_send_json($data); 
-		
+
+        $data = json_decode($this->get_all_options());
+
+        wp_send_json($data);
+
         //die();
     }
 
     public function do_import_data() {
-		if (!current_user_can('manage_woocommerce') ) {
+        if (!current_user_can('manage_woocommerce')) {
             return;
-        }	
+        }
         if (!isset($_POST['import_value'])) {
             die(esc_html__("Error! No data", 'woocommerce-products-filter'));
         }
@@ -98,17 +98,15 @@ final class WOOF_EXP_IMP extends WOOF_EXT {
             $options = wc_clean(json_decode(stripcslashes($_POST['import_value']), true));
 
             foreach ($options as $option_name => $option_data) {
-				if(substr( $option_name, 0, 5 ) === "woof_") {
-					update_option($option_name, $option_data);
-				}
-                
+                if (substr($option_name, 0, 5) === "woof_") {
+                    update_option($option_name, $option_data);
+                }
             }
             die(esc_html__("Settings imported successfully. Reload the page please.", 'woocommerce-products-filter'));
         } catch (Exception $e) {
             die(esc_html__("Error!", 'woocommerce-products-filter'));
         }
     }
-
 }
 
 WOOF_EXT::$includes['applications']['export_import'] = new WOOF_EXP_IMP();

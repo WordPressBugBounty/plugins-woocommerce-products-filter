@@ -41,7 +41,7 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
     }
 
     public function wp_footer() {
-        wp_enqueue_script('jquery-ui-datepicker', array('jquery'));
+        wp_enqueue_script('jquery-ui-datepicker', false, array('jquery'));
         wp_enqueue_script('meta-datepicker-js', $this->get_meta_filter_link() . 'js/datepicker.js', array('jquery'), WOOF_VERSION, true);
         wp_enqueue_style('meta-datepicker-css', $this->get_meta_filter_link() . 'css/datepicker.css', array(), WOOF_VERSION);
     }
@@ -86,7 +86,7 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
             if ($this->value_type != 'NUMERIC') {
                 $type = 'DATE';
             }
-            
+
             if ($from != "i") {
                 $from = $curr_range[0];
                 if ($type == 'DATE') {
@@ -102,9 +102,9 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
                     $to = date('Y-M-D', $to);
                 }
             }
-            
+
             //+++
-            
+
             $meta = [];
 
             //acf datepicker
@@ -112,7 +112,7 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
                 if (!$to) {
                     $to = PHP_INT_MAX;
                 }
-                
+
                 $from = date('Ymd', intval($from)); //int must be another way fatal error because from DB it cames as string
                 $to = date('Ymd', intval($to)); //int must be another way fatal error because from DB it cames as string
             }
@@ -126,14 +126,14 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
                 );
             } elseif ((!$from AND $to) OR ($from AND !$to)) {
                 $compare = ">";
-                
+
                 if ($from AND !$to) {
                     $val = $from;
                 } else {
                     $val = $to;
                     $compare = "<";
                 }
-                
+
                 $meta = array(
                     'key' => $this->meta_key,
                     'value' => $val,
@@ -141,8 +141,8 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
                     'compare' => $compare,
                 );
             }
-            
-            
+
+
             return apply_filters('woof_meta_data_datapicker', $meta, $this->meta_key);
         }
 
@@ -186,5 +186,4 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
 
         return $value_txt;
     }
-
 }

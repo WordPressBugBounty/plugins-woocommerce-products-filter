@@ -677,16 +677,21 @@ if (!function_exists('woof_print_item_by_key')) {
                                 $tax_show = explode(',', $shortcode_atts['tax_only']);
                             }
 
+
                             add_filter('woof_custom_filter_items_order', function ($items_order, $do = null) {
                                 if (is_user_logged_in()) {
                                     return $items_order;
                                 }
 
-                                foreach ($items_order as $index => $key) {
-                                    if ('by_price' == $key) {
-                                        unset($items_order[$index]);
-                                    }
-                                }
+                                //https://wordpress.org/support/topic/why-is-the-price-range-filter-not-displayed-publicly/
+                                /*
+                                  foreach ($items_order as $index => $key) {
+                                  if ('by_price' == $key) {
+                                  unset($items_order[$index]);
+                                  }
+                                  }
+                                 * 
+                                 */
 
                                 return $items_order;
                             });

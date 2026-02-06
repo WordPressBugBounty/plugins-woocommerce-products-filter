@@ -7,14 +7,14 @@
   Tested up to: WP 6.9
   Author: realmag777
   Author URI: https://pluginus.net/
-  Version: 1.3.7.4
+  Version: 1.3.8
   Requires PHP: 7.4
   Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
   Text Domain: woocommerce-products-filter
   Domain Path: /languages
   Forum URI: https://pluginus.net/support/forum/woof-woocommerce-products-filter/
   WC requires at least: 6.0
-  WC tested up to: 10.4
+  WC tested up to: 10.5
   Requires Plugins: woocommerce
  */
 
@@ -57,7 +57,7 @@ define('WOOF_PATH', plugin_dir_path(__FILE__));
 define('WOOF_LINK', plugin_dir_url(__FILE__));
 define('WOOF_PLUGIN_NAME', plugin_basename(__FILE__));
 define('WOOF_EXT_PATH', WOOF_PATH . 'ext/');
-define('WOOF_VERSION', '1.3.7.4');
+define('WOOF_VERSION', '1.3.8');
 //define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define('WOOF_MIN_WOOCOMMERCE_VERSION', '6.0');
 //classes
@@ -75,7 +75,7 @@ include WOOF_PATH . 'lib/alert/index.php';
 //***
 include WOOF_PATH . 'installer/first_settings.php';
 
-//15-12-2025
+//06-02-2026
 final class WOOF {
 
     public $settings = array();
@@ -1222,10 +1222,10 @@ final class WOOF {
         wp_enqueue_script('ion.range-slider', WOOF_LINK . 'js/ion.range-slider/js/ion.rangeSlider.min.js', array('jquery'), WOOF_VERSION);
         wp_enqueue_style('ion.range-slider', WOOF_LINK . 'js/ion.range-slider/css/ion.rangeSlider.css', array(), WOOF_VERSION);
         if ($price_filter == 1) {
-            wp_enqueue_script('jquery-ui-core', array('jquery'));
-            wp_enqueue_script('jquery-ui-slider', array('jquery-ui-core'));
-            wp_enqueue_script('wc-jquery-ui-touchpunch', array('jquery-ui-core', 'jquery-ui-slider'));
-            wp_enqueue_script('wc-price-slider', array('jquery-ui-slider', 'wc-jquery-ui-touchpunch'));
+            wp_enqueue_script('jquery-ui-core', false, array('jquery'));
+            wp_enqueue_script('jquery-ui-slider', false, array('jquery-ui-core'));
+            wp_enqueue_script('wc-jquery-ui-touchpunch', false, array('jquery-ui-core', 'jquery-ui-slider'));
+            wp_enqueue_script('wc-price-slider', false, array('jquery-ui-slider', 'wc-jquery-ui-touchpunch'));
         }
     }
 
@@ -2089,7 +2089,8 @@ final class WOOF {
         $data = $this->get_request_data();
         $res = array();
 
-        $woo_taxonomies = NULL; {
+        $woo_taxonomies = NULL;
+        {
             $woo_taxonomies = get_object_taxonomies('product');
         }
 
@@ -2241,7 +2242,7 @@ final class WOOF {
             'orderby' => 'no',
             'order' => 'no',
             'page' => 1,
-            'per_page' => 0,
+            'per_page' => $is_prediction ? 9999 : 0,
             'is_ajax' => 0,
             'taxonomies' => '',
             'sid' => '',
@@ -2473,7 +2474,7 @@ final class WOOF {
         ?>
 
         <?php if ($is_ajax == 1): ?>
-            <?php ?>
+                <?php ?>
             <div id="woof_results_by_ajax" data-count="<?php echo intval($products->found_posts) ?>"  class="woof_results_by_ajax_shortcode" data-shortcode="<?php echo esc_attr($shortcode_txt) ?>">
                 <?php
                 //endif;
@@ -2569,7 +2570,7 @@ final class WOOF {
                         }
                         ?>
 
-                        <?php //wc_get_template('loop/loop-end.php');                                                                                                                               ?>
+                        <?php //wc_get_template('loop/loop-end.php');                                                                                                                                          ?>
 
                         <?php
                         //woo_pagenav(); - for wp theme canvas
@@ -2623,7 +2624,7 @@ final class WOOF {
                 ?>
 
                 <?php if ($is_ajax == 1): ?>
-                    <?php if (!get_option('woof_try_ajax', 0)): ?>
+            <?php if (!get_option('woof_try_ajax', 0)): ?>
                     </div>
 
                 <?php endif; ?>
@@ -3276,7 +3277,7 @@ final class WOOF {
             //*** default exts
             if (!empty($directories['default']) AND is_array($directories['default'])) {
                 if (!is_array($activated)) {
-                    $activated = array();
+                    $activated = [];
                 }
 
                 foreach ($directories['default'] as $path) {
@@ -3413,10 +3414,16 @@ final class WOOF {
 
         private function is_should_init() {
 
-            if (is_admin() || apply_filters('woof_disable_filter', false)) {
+            if (is_admin()) {
                 return true;
             }
 
+            //https://pluginus.net/support/topic/woof_disable_filter-doesn-t-disable-filter/
+            if (apply_filters('woof_disable_filter', false)) {
+                return false;
+            }
+
+            //+++
             //do not exclude in widget page
             if (isset($_SERVER['SCRIPT_URI'])) {
                 $uri = parse_url(trim(WOOF_HELPER::get_server_var('SCRIPT_URI')));
@@ -4072,4 +4079,28 @@ final class WOOF {
         global $WOOF;
         return $WOOF;
     }
+
+    /**
+     * Determine if a WOOF search is currently being performed in redirect mode
+     * 
+     * @return bool True if search is active, false otherwise
+     */
+    function is_woof_search_going() {
+        $is_search = false;
+
+        if (woof()->is_isset_in_request_data(woof()->get_swoof_search_slug())) {
+            $is_search = true;
+        }
+
+        return $is_search;
+    }
     
+// Disable Elementor blocks cache during WOOF filtering
+add_filter('elementor/frontend/enable_cache', function ($state) {
+    if (function_exists('is_woof_search_going') && is_woof_search_going()) {
+        return false; // Disable cache for filtered results
+    }
+    
+    return $state;
+}, 999);
+

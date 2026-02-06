@@ -12,7 +12,7 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
     public $seo = null;
 
     public function __construct() {
-		
+
         //return false;//for dev purposes
         parent::__construct();
 
@@ -22,7 +22,7 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
 
         include_once $this->get_ext_path() . 'classes/url_parser.php';
         include_once $this->get_ext_path() . 'classes/seo.php';
-		
+
         if (isset($this->woof_settings['woof_url_request']['enable'])) {
             $this->enable = $this->woof_settings['woof_url_request']['enable'];
 
@@ -38,7 +38,7 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
                 }, 5, 3);
             }
         }
-		
+
         $this->init();
         add_filter('woocommerce_product_query_tax_query', array($this, 'tax_query'), 10, 2);
         add_filter('wpseo_sitemap_index', array($this, 'sitemap_index'), 10);
@@ -78,7 +78,19 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
     }
 
     public function init_js() {
-        wp_enqueue_script('woof_url_parser', $this->get_ext_link() . 'js/url_parser.js', array('jquery', 'woof_front'), WOOF_VERSION);
+        global $wp_version;
+        //WordPress 6.3+ supports 'strategy'
+        if (version_compare($wp_version, '6.3', '>=')) {
+            wp_enqueue_script('woof_url_parser', $this->get_ext_link() . 'js/url_parser.js', array('jquery'), WOOF_VERSION, array(
+                'in_footer' => true,
+                'strategy' => 'defer' //Loaded in parallel, executed in order
+            ));
+        } else {
+            //For older versions of WordPress - the classic method with dependency
+            wp_enqueue_script('woof_url_parser', $this->get_ext_link() . 'js/url_parser.js', array('jquery', 'woof_front'), WOOF_VERSION, true);
+        }
+
+
         $all_data['filters'] = array_flip($this->url_parser->get_all_items());
         foreach ($this->url_parser->special_filters as $key => $data) {
             $all_data['special'][array_key_first($data)] = $key;
@@ -109,9 +121,9 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
         if (!isset($_REQUEST['url_request_nonce']) || !wp_verify_nonce($_REQUEST['url_request_nonce'], 'woof_url_request_nonce')) {
             die('0');
         }
-		if (!current_user_can('manage_woocommerce') ) {
+        if (!current_user_can('manage_woocommerce')) {
             return;
-        }		
+        }
         ob_start();
         $url = '/{any}/';
         if (WOOF_REQUEST::get('url')) {
@@ -123,8 +135,8 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
         }
         $this->woof_draw_seo_rules_item('', $lang, $url);
         $seo_rule = ob_get_clean();
-		wp_send_json($seo_rule);
-		//die($seo_rule);
+        wp_send_json($seo_rule);
+        //die($seo_rule);
     }
 
     public function woof_print_applications_tabs_content() {
@@ -204,6 +216,19 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
         if (isset($tax_q["relation"])) {
             unset($tax_q["relation"]);
         }
+
+        // Remove WooCommerce duplicates, keep WOOF version (correctly splits commas)
+        $woof_taxonomies = array_column($tax_q, 'taxonomy');
+        if (!empty($tax_q)) {
+            foreach ($tax_query as $key => $item) {
+                if (isset($item['taxonomy']) && in_array($item['taxonomy'], $woof_taxonomies)) {
+                    unset($tax_query[$key]);
+                }
+            }
+        }
+
+        //+++
+
         $tax_query = array_merge($tax_query, $tax_q);
         $tax_query = woof()->product_visibility_not_in($tax_query, woof()->generate_visibility_keys(woof()->is_isset_in_request_data(woof()->get_swoof_search_slug())));
         $tax_relations = apply_filters('woof_main_query_tax_relations', array());
@@ -229,15 +254,14 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
             $links = explode(PHP_EOL, trim($this->woof_settings['woof_url_request']['yoast_sitemap']));
         }
         foreach ($links as $l) {
-			if (!$l){
-				continue;
-			}
+            if (!$l) {
+                continue;
+            }
             $appended_text .= "<sitemap><loc>{$l}</loc></sitemap>";
         }
 
         return $appended_text;
     }
-
 }
 
 WOOF_EXT::$includes['applications']['url_request'] = new WOOF_EXT_URL_REQUEST();

@@ -28,9 +28,9 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
 
     public function __construct() {
         parent::__construct();
-		
-		add_action("woof_after_inline_js", array($this, 'add_js'));
-		
+
+        add_action("woof_after_inline_js", array($this, 'add_js'));
+
         global $wpdb;
         $this->db = $wpdb;
         $this->table = $this->db->prefix . 'woof_front_builder';
@@ -39,9 +39,9 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
             $this->table .= '_demo';
         }
 
-		//add global  option woof_print_option_advanced
-		add_action('woof_print_option_advanced', array($this, 'global_options'));
-		
+        //add global  option woof_print_option_advanced
+        add_action('woof_print_option_advanced', array($this, 'global_options'));
+
         $this->init_request();
 
         add_filter('woof_modify_settings_before_action', [$this, 'woof_modify_settings_before_action'], 10, 2);
@@ -83,38 +83,39 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
         $this->init();
     }
 
-	public function add_js() {
-			$str = "";
-	        if ($this->demo) {
-                $str .= ' var woof_front_builder_is_demo=1;';
-            }
+    public function add_js() {
+        $str = "";
+        if ($this->demo) {
+            $str .= ' var woof_front_builder_is_demo=1;';
+        }
 
-            $str .= ' var woof_front_sd_is_a=' . intval(isset(WOOF_EXT::$includes['applications']['sd'])) . ';';
-            $str .= 'var woof_front_show_notes=' . intval(woof()->show_notes) . ';';
-            $str .= 'var woof_lang_front_builder_del="' . esc_html__('Are you sure you want to delete this filter-section?', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_options="' . esc_html__('Options', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_option="' . esc_html__('Option', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_section_options="' . esc_html__('Section Options', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_description="' . esc_html__('Description', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_close="' . esc_html__('Close', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_suggest="' . esc_html__('Suggest the feature', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_good_to_use="' . esc_html__('good to use in content areas', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_confirm_sd="' . esc_html__('Smart Designer item will be created and attached to this filter section and will cancel current type, proceed?', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_creating="' . esc_html__('Creating', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_shortcode="' . esc_html__('Shortcode', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_layout="' . esc_html__('Layout', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_filter_section="' . esc_html__('Section options', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_filter_redrawing="' . esc_html__('filter redrawing', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_filter_redrawn="' . esc_html__('redrawn', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_filter_redrawn="' . esc_html__('redrawn', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_title_top_info="' . esc_html__('this functionality is only visible for the site administrator', 'woocommerce-products-filter') . '";';
-            $str .= 'var woof_lang_front_builder_title_top_info_demo="' . esc_html__('demo mode is activated, and results are visible only to you', 'woocommerce-products-filter') . '";';
+        $str .= ' var woof_front_sd_is_a=' . intval(isset(WOOF_EXT::$includes['applications']['sd'])) . ';';
+        $str .= 'var woof_front_show_notes=' . intval(woof()->show_notes) . ';';
+        $str .= 'var woof_lang_front_builder_del="' . esc_html__('Are you sure you want to delete this filter-section?', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_options="' . esc_html__('Options', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_option="' . esc_html__('Option', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_section_options="' . esc_html__('Section Options', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_description="' . esc_html__('Description', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_close="' . esc_html__('Close', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_suggest="' . esc_html__('Suggest the feature', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_good_to_use="' . esc_html__('good to use in content areas', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_confirm_sd="' . esc_html__('Smart Designer item will be created and attached to this filter section and will cancel current type, proceed?', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_creating="' . esc_html__('Creating', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_shortcode="' . esc_html__('Shortcode', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_layout="' . esc_html__('Layout', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_filter_section="' . esc_html__('Section options', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_filter_redrawing="' . esc_html__('filter redrawing', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_filter_redrawn="' . esc_html__('redrawn', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_filter_redrawn="' . esc_html__('redrawn', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_title_top_info="' . esc_html__('this functionality is only visible for the site administrator', 'woocommerce-products-filter') . '";';
+        $str .= 'var woof_lang_front_builder_title_top_info_demo="' . esc_html__('demo mode is activated, and results are visible only to you', 'woocommerce-products-filter') . '";';
 
-            $str .= ';var woof_lang_front_builder_select="+ ' . esc_html__('Add filter section', 'woocommerce-products-filter') . '";';	
-		
-		wp_add_inline_script('woof_front', $str, 'before');
-	}
-	public function get_ext_path() {
+        $str .= ';var woof_lang_front_builder_select="+ ' . esc_html__('Add filter section', 'woocommerce-products-filter') . '";';
+
+        wp_add_inline_script('woof_front', $str, 'before');
+    }
+
+    public function get_ext_path() {
         return plugin_dir_path(__FILE__);
     }
 
@@ -130,7 +131,7 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
         if (isset($atts['name']) AND !empty($atts['name'])) {
             $filter_id = 0;
             $name = $atts['name'];
-			
+
             if (isset($atts['filter_id']) AND !empty(intval($atts['filter_id']))) {
                 if (wp_doing_ajax()) {
                     //in non-ajax mode this interfere into query to below shortcode [woof_products]
@@ -236,7 +237,7 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
         }
 
         if (!isset($cache[$filter_id])) {
-			$sql = $this->db->prepare("SELECT name FROM %i WHERE id=%d ", $this->table, $filter_id);
+            $sql = $this->db->prepare("SELECT name FROM %i WHERE id=%d ", $this->table, $filter_id);
             $cache[$filter_id] = $this->db->get_row($sql)->name;
         }
 
@@ -247,7 +248,7 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
         static $cache = [];
 
         if (!isset($cache[$filter_id])) {
-			$sql = $this->db->prepare("SELECT selected FROM %i WHERE id=%d ", $this->table, $filter_id);
+            $sql = $this->db->prepare("SELECT selected FROM %i WHERE id=%d ", $this->table, $filter_id);
             $cache[$filter_id] = $this->db->get_row($sql)->selected;
         }
 
@@ -258,7 +259,7 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
         static $cache = [];
 
         if (!isset($cache[$name])) {
-			$sql = $this->db->prepare("SELECT selected FROM %i WHERE name=%s ", $this->table, $name);
+            $sql = $this->db->prepare("SELECT selected FROM %i WHERE name=%s ", $this->table, $name);
             $cache[$name] = $this->db->get_row($sql)->selected;
         }
 
@@ -306,11 +307,16 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
 
         //lets get $filter_id
         if (wp_doing_ajax()) {
+
             if (isset($_REQUEST['woof_shortcode'])) {
-                $atts = shortcode_parse_atts($_REQUEST['woof_shortcode']);
+
+                $atts = shortcode_parse_atts(stripcslashes($_REQUEST['woof_shortcode']));
+
                 if (isset($atts['filter_id'])) {
+
                     $filter_id = self::$filter_id = intval($atts['filter_id']);
                     add_filter('woof_filter_search_slug', function ($slug)use ($filter_id) {
+
                         WOOF_REQUEST::set('woof_form_builder_filter_id', $filter_id);
                         return $this->get_alias_by_id($filter_id);
                     });
@@ -318,18 +324,16 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
             }
         } else {
             if (!empty($parts)) {
-				
+
                 foreach ($parts as $value) {
-					
 
-					$value = $this->get_slug_by_alias($value);
 
-					
-					
+                    $value = $this->get_slug_by_alias($value);
+
                     if (substr($value, 0, strlen($slug)) === $slug) {
                         $d = $this->decompose_search_slug($value);
                         $filter_id = intval($d['filter_id']);
-						$sql = $this->db->prepare("SELECT id FROM %i WHERE id=%d", $this->table, $filter_id);
+                        $sql = $this->db->prepare("SELECT id FROM %i WHERE id=%d", $this->table, $filter_id);
                         if ($filter_id > 0 AND $this->db->get_row($sql, ARRAY_A)) {
                             add_filter('woof_filter_search_slug', function ($slug)use ($filter_id) {
                                 WOOF_REQUEST::set('woof_form_builder_filter_id', $filter_id);
@@ -390,8 +394,6 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
         add_action('wp_footer', array($this, 'wp_footer'), 10);
         add_action('admin_footer', array($this, "admin_footer"));
         add_shortcode("woof_front_builder", array($this, "woof_front_builder"));
-
-
     }
 
     private function is_admin() {
@@ -547,7 +549,7 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
         if (!isset($atts['name'])) {
             return esc_html__('Unique name should be set for shortcode [woof_front_builder]', 'woocommerce-products-filter');
         }
-        $atts = wc_clean($atts);       
+        $atts = wc_clean($atts);
         $name = esc_html($atts['name']);
         if ($this->demo) {
             $name .= ' ' . str_replace(':', '', str_replace('.', '', filter_var(WOOF_HELPER::get_server_var('REMOTE_ADDR'), FILTER_VALIDATE_IP)));
@@ -603,13 +605,13 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
             $data['options']['hide_terms_count'] = 1;
         }
 
-		$data['swoof_slug'] = $this->get_alias_by_id($data['id']);
-		
+        $data['swoof_slug'] = $this->get_alias_by_id($data['id']);
+
         return woof()->render_html($this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'shortcodes' . DIRECTORY_SEPARATOR . 'woof_front_builder.php', $data);
     }
 
     private function get_data($name) {
-		$sql = $this->db->prepare("SELECT * FROM %i WHERE name=%s ", $this->table, $name);
+        $sql = $this->db->prepare("SELECT * FROM %i WHERE name=%s ", $this->table, $name);
         $data = $this->db->get_row($sql, ARRAY_A);
         if (empty($data)) {
             //create if not exists
@@ -634,7 +636,7 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
 
         return $data;
     }
-	
+
     private function create($name) {
         $data = [
             'name' => esc_sql($name),
@@ -651,10 +653,10 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
 
     //ajax
     public function get_items() {
-		
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_front_builder_nonce'), 'front_builder_nonce')) {
-			return false;
-		}
+
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_front_builder_nonce'), 'front_builder_nonce')) {
+            return false;
+        }
         if (!$this->is_admin()) {
             return false;
         }
@@ -741,9 +743,9 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
 
     //ajax
     public function set_sd() {
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_front_builder_nonce'), 'front_builder_nonce')) {
-			return false;
-		}		
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_front_builder_nonce'), 'front_builder_nonce')) {
+            return false;
+        }
         $key = esc_html($_REQUEST['key']);
         $sd = WOOF_EXT::$includes['applications']['sd'];
         $title = sprintf(esc_html__('by Front Builder for: %s', 'woocommerce-products-filter'), $key);
@@ -766,9 +768,9 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
     }
 
     public function save_items() {
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_front_builder_nonce'), 'front_builder_nonce')) {
-			return false;
-		}
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_front_builder_nonce'), 'front_builder_nonce')) {
+            return false;
+        }
         if (!$this->is_admin()) {
             return false;
         }
@@ -776,51 +778,52 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
         $name = esc_html($_REQUEST['name']);
         $fields = esc_html($_REQUEST['fields']);
 
-        $this->db->update($this->table, array('selected' => esc_sql($fields)), array('name' => esc_sql($name) ));
+        $this->db->update($this->table, array('selected' => esc_sql($fields)), array('name' => esc_sql($name)));
     }
-	public function get_alias_by_id($id) {
+
+    public function get_alias_by_id($id) {
         $woof_settings = get_option('woof_settings', []);
         $slug = 'swoof'; //default slug
         if (isset($woof_settings['swoof_search_slug']) AND !empty(trim($woof_settings['swoof_search_slug']))) {
             $slug = trim($woof_settings['swoof_search_slug']);
         }
-		$slug .= $id;
-		if (isset($woof_settings['slug_alias']) && isset($woof_settings['slug_alias'][$id]) && !empty(trim($woof_settings['slug_alias'][$id])) ) {
-			$slug = trim($woof_settings['slug_alias'][$id]);
-		}
-		return $slug;
-	}
-	
-	public function get_slug_by_alias($alias) {
-		if (empty($alias)) {
-			return $alias;
-		}
+        $slug .= $id;
+        if (isset($woof_settings['slug_alias']) && isset($woof_settings['slug_alias'][$id]) && !empty(trim($woof_settings['slug_alias'][$id]))) {
+            $slug = trim($woof_settings['slug_alias'][$id]);
+        }
+        return $slug;
+    }
+
+    public function get_slug_by_alias($alias) {
+        if (empty($alias)) {
+            return $alias;
+        }
         $woof_settings = get_option('woof_settings', []);
         $slug = $alias; //default slug
-		if (!is_array($woof_settings)) {
-			$woof_settings = array();
-		}
-		if (!isset($woof_settings['slug_alias']) || !is_array($woof_settings['slug_alias'])) {
-			$woof_settings['slug_alias'] = array();
-		}
-		if (array_search($alias, $woof_settings['slug_alias']) !== false) {
-			$slug = 'swoof'; //default slug
-			if (isset($woof_settings['swoof_search_slug']) AND !empty(trim($woof_settings['swoof_search_slug']))) {
-				$slug = trim($woof_settings['swoof_search_slug']);
-			}			
-			$slug .= array_search($alias, $woof_settings['slug_alias']);
-		}
+        if (!is_array($woof_settings)) {
+            $woof_settings = array();
+        }
+        if (!isset($woof_settings['slug_alias']) || !is_array($woof_settings['slug_alias'])) {
+            $woof_settings['slug_alias'] = array();
+        }
+        if (array_search($alias, $woof_settings['slug_alias']) !== false) {
+            $slug = 'swoof'; //default slug
+            if (isset($woof_settings['swoof_search_slug']) AND !empty(trim($woof_settings['swoof_search_slug']))) {
+                $slug = trim($woof_settings['swoof_search_slug']);
+            }
+            $slug .= array_search($alias, $woof_settings['slug_alias']);
+        }
 
-		return $slug;
-	}	
-	
-	public function global_options(){
-		$sql = $this->db->prepare("SELECT id FROM %i", $this->table);
-		$data['ids'] = $this->db->get_results($sql, ARRAY_A);
-		$data['slug'] = woof()->get_swoof_search_slug();
-		
-		woof()->render_html_e($this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'global_options.php', $data);
-	}
+        return $slug;
+    }
+
+    public function global_options() {
+        $sql = $this->db->prepare("SELECT id FROM %i", $this->table);
+        $data['ids'] = $this->db->get_results($sql, ARRAY_A);
+        $data['slug'] = woof()->get_swoof_search_slug();
+
+        woof()->render_html_e($this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'global_options.php', $data);
+    }
 
     private function install() {
         $charset_collate = '';
@@ -859,7 +862,6 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
 
         return $answer;
     }
-
 }
 
 WOOF_EXT::$includes['applications']['front_builder'] = new WOOF_FRONT_BUILDER();

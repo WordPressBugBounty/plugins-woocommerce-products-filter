@@ -21,9 +21,10 @@ export default class List {
     }
 
     add(key, value) {
-        if (!key) {
+        if (!key || !value) {
             return;
         }
+
 
         let li = Helper.create_element('li', {}, Helper.create_element('span', {}, '[<strong>' + value.title + '</strong>]'));
 

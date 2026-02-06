@@ -132,6 +132,9 @@ export default class Builder {
 
         if (this.selected.length > 0) {
             this.selected.forEach(key => {
+		if(!this.data[key]) {
+			return;
+		}		
                 if (parseInt(this.data[key].is_taxonomy)) {
                     tax_only.push(key);
                 } else {

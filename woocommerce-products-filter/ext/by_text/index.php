@@ -23,7 +23,10 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
         parent::__construct();
         include_once $this->get_ext_path() . 'classes/cache.php';
         $this->cache = new WoofTextCache();
-        $this->use_post__in = apply_filters('woof_husky_query_post__in', false);
+
+        //$this->use_post__in = apply_filters('woof_husky_query_post__in', false);
+        $products_count = wp_count_posts('product')->publish ?? 0;
+        $this->use_post__in = apply_filters('woof_husky_query_post__in', $products_count >= 2000);
 
         //default data fields
         $this->options = $this->data_fields();
@@ -703,7 +706,7 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 
         global $wpdb;
 
-        if (!is_array($search_terms)) { 
+        if (!is_array($search_terms)) {
             $search_terms = htmlspecialchars_decode($search_terms);
             $search_terms = explode(' ', $search_terms);
         }
@@ -991,8 +994,8 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
         if (isset($this->options['template']) && !empty($this->options['template'])) {
             $template = $this->options['template'];
         }
-		$template = sanitize_key($template);
-		
+        $template = sanitize_key($template);
+
         $path = $this->get_ext_path() . "views/templates/{$template}.php"; //templates inside the plugin
 
         if (!file_exists($path)) {

@@ -196,7 +196,8 @@ final class WOOF_EXT_STAT extends WOOF_EXT {
         $data = array();
         $data['stat_min_date'] = $this->get_stat_min_date_db();
         //***
-        wp_register_script('woof_stat', $this->get_ext_link() . 'js/admin.js');
+        wp_register_script('woof_stat', $this->get_ext_link() . 'js/admin.js', array('jquery', 'jquery-ui-core'), WOOF_VERSION);
+
         wp_enqueue_style('woof_stat-css', $this->get_ext_link() . 'css/stat.css', array(), WOOF_VERSION);
         $localize_script = array(
             'calendar_date_format' => 'DD, d MM, yy',
@@ -225,7 +226,7 @@ final class WOOF_EXT_STAT extends WOOF_EXT {
         }
 
         wp_localize_script('woof_stat', 'woof_stat_vars', $localize_script);
-        wp_enqueue_script('woof_stat', array('jquery', 'jquery-ui-core'), [], WOOF_VERSION);
+        wp_enqueue_script('woof_stat');
 
         //***
         if (!extension_loaded('pdo_mysql')) {
@@ -332,7 +333,7 @@ final class WOOF_EXT_STAT extends WOOF_EXT {
         if (!isset($_REQUEST['nonce_filter']) || !wp_verify_nonce($_REQUEST['nonce_filter'], 'woof_front_nonce')) {
             die('0');
         }
-		
+
         WOOF_REQUEST::set('woof_products_doing', 1);
         $_GET = WOOF_REQUEST::get('woof_products_doing');
         if ($this->is_enabled AND !is_null($this->pdo)) {
@@ -1447,7 +1448,6 @@ final class WOOF_EXT_STAT extends WOOF_EXT {
             return array();
         }
     }
-
 }
 
 WOOF_EXT::$includes['applications']['stat'] = new WOOF_EXT_STAT();

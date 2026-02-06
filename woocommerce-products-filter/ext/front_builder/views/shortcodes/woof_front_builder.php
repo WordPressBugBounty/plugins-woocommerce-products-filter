@@ -2,9 +2,9 @@
 if (!defined('ABSPATH'))
     die('No direct access allowed');
 
-$selected_list = esc_html__(implode(',', $selected));
-$tax_only = esc_html__(implode(',', $selected_taxonomies));
-$by_only = esc_html__(implode(',', $selected_nontaxonomies));
+$selected_list = esc_html(implode(',', $selected));
+$tax_only = esc_html(implode(',', $selected_taxonomies));
+$by_only = esc_html(implode(',', $selected_nontaxonomies));
 
 
 if (empty($by_only)) {
@@ -45,16 +45,24 @@ $container_id = 'woof-front-builder-' . $shortcode_id;
 
 <div><!-- avoid wpautop for button -->
     <?php if ($is_admin): ?>
-        <a href="javascript: void(0);" id="<?php echo esc_html__($shortcode_id) ?>" data-selected="<?php echo esc_html__($selected_list) ?>" data-slug="<?php echo esc_attr($swoof_slug) ?>" data-filter-id="<?php echo esc_attr($id) ?>" data-name="<?php echo esc_html__($name) ?>" data-popup-width="<?php echo esc_html__($popup_width) ?>" data-popup-height="<?php echo esc_html__($popup_height) ?>" class="woof-form-builder-btn">
-            <img src="<?php echo esc_attr($ext_link) . 'img/cog.svg' ?>" style="opacity: 0;" alt="<?php echo esc_html__($name) ?>">
-            <img src="<?php echo esc_attr($ext_link) . 'img/husky.svg' ?>" alt="<?php echo esc_html__($name) ?>">
+        <a href="javascript: void(0);" 
+		   id="<?php echo esc_html($shortcode_id) ?>" 
+		   data-selected="<?php echo esc_html($selected_list) ?>" 
+		   data-slug="<?php echo esc_attr($swoof_slug) ?>" 
+		   data-filter-id="<?php echo esc_attr($id) ?>" 
+		   data-name="<?php echo esc_html($name) ?>" 
+		   data-popup-width="<?php echo esc_html($popup_width) ?>" 
+		   data-popup-height="<?php echo esc_html($popup_height) ?>" 
+		   class="woof-form-builder-btn">
+            <img src="<?php echo esc_attr($ext_link) . 'img/cog.svg' ?>" style="opacity: 0;" alt="<?php echo esc_html($name) ?>">
+            <img src="<?php echo esc_attr($ext_link) . 'img/husky.svg' ?>" alt="<?php echo esc_html($name) ?>">
         </a>
     <?php endif; ?>
 
     <div id="<?php echo esc_attr($container_id) ?>" 
 		 class="woof-front-builder-container woof_section_scrolled woof_use_beauty_scroll" 
 		 style="<?php echo wp_kses($style,'default') ?>" 
-		 data-name="<?php echo esc_html__($name) ?>" 
+		 data-name="<?php echo esc_html($name) ?>" 
 		 data-viewtypes='<?php echo json_encode(woof()->html_types) ?>'>
         <?php
         if (!empty($selected)) {

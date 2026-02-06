@@ -707,6 +707,40 @@ final class WOOF_HELPER {
 
     public static function get_max_price($additional_taxes = "") {
         global $wpdb;
+
+        if (version_compare(WOOCOMMERCE_VERSION, '2.6', '>')) {
+            $prices = self::get_filtered_price($additional_taxes);
+            $max_price = $prices->max_price ?: 0;
+        } else {
+            //not supported
+        }
+
+        // If taxes are included and need to be shown with tax
+        if (wc_tax_enabled() && 'incl' === get_option('woocommerce_tax_display_shop')) {
+            // Find the product with the highest price
+            $product_id = $wpdb->get_var($wpdb->prepare("
+            SELECT post_id 
+            FROM {$wpdb->postmeta} 
+            WHERE meta_key = '_price' 
+            AND meta_value = %s
+            LIMIT 1
+        ", $max_price));
+
+            if ($product_id) {
+                $product = wc_get_product($product_id);
+                if ($product) {
+                    // Get the price including taxes via the WooCommerce API
+                    $max_price = wc_get_price_including_tax($product);
+                }
+            }
+        }
+
+        return ceil($max_price);
+    }
+
+    //https://pluginus.net/support/topic/price-filter-not-working-correctly-3/
+    public static function get_max_price__old($additional_taxes = "") {
+        global $wpdb;
         if (version_compare(WOOCOMMERCE_VERSION, '2.6', '>')) {
             $prices = self::get_filtered_price($additional_taxes);
             $max = ceil($prices->max_price ?: 0);
@@ -757,7 +791,7 @@ final class WOOF_HELPER {
 						)
 					)
 				', $sql_data
-                )));
+                                )));
             }
         }
 
@@ -792,7 +826,7 @@ final class WOOF_HELPER {
 					WHERE meta_key IN ("' . implode('","', apply_filters('woocommerce_price_filter_meta_keys', array('_price', '_min_variation_price'))) . '")
 					AND meta_value != ""
 				', $sql_data)
-                ));
+                        ));
             } else {
                 $sql_data = array(
                     array(
@@ -819,7 +853,70 @@ final class WOOF_HELPER {
 						)
 					)
 				', $sql_data
-                )));
+                                )));
+            }
+        }
+
+
+        return $min;
+    }
+
+    //https://pluginus.net/support/topic/price-filter-not-working-correctly-3/
+    public static function get_min_price__old($additional_taxes = "") {
+        global $wpdb;
+
+        if (version_compare(WOOCOMMERCE_VERSION, '2.6', '>')) {
+            $prices = self::get_filtered_price($additional_taxes);
+            $min = floor($prices->min_price ?: 0);
+        } else {
+            self::set_layered_nav_product_ids();
+            if (0 === sizeof(WC()->query->layered_nav_product_ids)) {
+                $sql_data = array(
+                    array(
+                        'val' => $wpdb->posts,
+                        'type' => 'string',
+                    ),
+                    array(
+                        'val' => $wpdb->postmeta,
+                        'type' => 'string',
+                    ),
+                );
+                $min = floor($wpdb->get_var(
+                                self::woof_prepare('
+					SELECT min(meta_value + 0)
+					FROM %1$s
+					LEFT JOIN %2$s ON %1$s.ID = %2$s.post_id
+					WHERE meta_key IN ("' . implode('","', apply_filters('woocommerce_price_filter_meta_keys', array('_price', '_min_variation_price'))) . '")
+					AND meta_value != ""
+				', $sql_data)
+                        ));
+            } else {
+                $sql_data = array(
+                    array(
+                        'val' => $wpdb->posts,
+                        'type' => 'string',
+                    ),
+                    array(
+                        'val' => $wpdb->postmeta,
+                        'type' => 'string',
+                    ),
+                );
+                $min = floor($wpdb->get_var(
+                                self::woof_prepare('
+					SELECT min(meta_value + 0)
+					FROM %1$s
+					LEFT JOIN %2$s ON %1$s.ID = %2$s.post_id
+					WHERE meta_key IN ("' . implode('","', apply_filters('woocommerce_price_filter_meta_keys', array('_price', '_min_variation_price'))) . '")
+					AND meta_value != ""
+					AND (
+						%1$s.ID IN (' . implode(',', array_map('absint', WC()->query->layered_nav_product_ids)) . ')
+						OR (
+							%1$s.post_parent IN (' . implode(',', array_map('absint', WC()->query->layered_nav_product_ids)) . ')
+							AND %1$s.post_parent != 0
+						)
+					)
+				', $sql_data
+                                )));
             }
         }
 

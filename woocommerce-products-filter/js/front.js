@@ -643,7 +643,11 @@ function woof_submit_link(link, ajax_redraw) {
                         );
             });
         } else {
-            window.location = link;
+            // Delay redirect to avoid conflicts with other scripts (Kadence, etc.)
+            //https://pluginus.net/support/topic/text-search-shortcode-enter-key-reloads-page-instead-of-redirecting-to-shop-page
+            setTimeout(() => {
+                window.location = link;
+            }, 100);
             woof_show_info_popup(woof_lang_loading);
         }
     }
@@ -1477,6 +1481,7 @@ function woof_init_ion_sliders() {
                 step: jQuery(input).data('step'),
                 onFinish: function (ui) {
                     var tax = jQuery(input).data('taxes');
+
                     woof_current_values.min_price =
                             parseFloat(ui.from, 10) / tax;
                     woof_current_values.max_price = parseFloat(ui.to, 10) / tax;
@@ -1502,6 +1507,7 @@ function woof_init_ion_sliders() {
                 onChange: function (data) {
                     if (jQuery('.woof_price_filter_txt')) {
                         var tax = jQuery(input).data('taxes');
+
                         jQuery('.woof_price_filter_txt_from').val(
                                 parseInt(data.from, 10) / tax
                                 );
