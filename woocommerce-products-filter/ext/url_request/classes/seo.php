@@ -12,7 +12,7 @@ class WOOF_SEO {
     protected $curr_url = '';
     protected $current_rule = array();
     protected $current_replace_vars = array();
-    protected $special_filters=[];
+    protected $special_filters = [];
 
     public function __construct($rules, $url) {
         if (is_admin() && (!defined('DOING_AJAX') || !DOING_AJAX )) {
@@ -21,7 +21,6 @@ class WOOF_SEO {
 
         $this->rules = $rules;
         $this->curr_url = $url;
-
 
         $this->special_filters = array(
             'instock' => array('stock' => 'instock'),
@@ -46,21 +45,23 @@ class WOOF_SEO {
         //for ajax
         add_filter('woof_draw_products_get_args', array($this, 'ajax_page_title'), 100, 2);
     }
-	public function get_index_deep() {
+
+    public function get_index_deep() {
         if (isset(woof()->settings['woof_url_request']['index_deep'])) {
             return woof()->settings['woof_url_request']['index_deep'];
         }
-		return 2;
-	}
-	public function get_no_index_search() {
+        return 2;
+    }
+
+    public function get_no_index_search() {
 
         if (isset(woof()->settings['woof_url_request']['page_index'])) {
             return !woof()->settings['woof_url_request']['page_index'];
         }
-		return true;
-	}
-	
-	public function check_search_rules() {
+        return true;
+    }
+
+    public function check_search_rules() {
 
         $rules = $this->rules;
         $current_url = $this->curr_url;
@@ -69,7 +70,7 @@ class WOOF_SEO {
         }
         foreach ($rules as $key => $rule_data) {
             if (isset($rule_data['url'])) {
-				$needle = array('{any}', '/', 'end');
+                $needle = array('{any}', '/', 'end');
                 $replase = array('.*', '\/', '$');
                 $url = str_replace($needle, $replase, $rule_data['url']);
                 preg_match('/' . $url . '/', $current_url, $matches);
@@ -206,6 +207,24 @@ class WOOF_SEO {
             }
         }
 
+        return $title;
+    }
+    
+    public function set_page_title___($title, $id) {
+        $rule = $this->check_search_rules();
+
+        //$is_valid_page = is_page($id) || is_shop() || is_product_category() || is_product_tag() || is_tax() || is_post_type_archive('product');
+
+        if ($rule && (is_page($id) || is_woocommerce()) && $this->do_index()) {
+
+            if (!in_the_loop() || !is_main_query()) {
+                return $title;
+            }
+
+            if (isset($rule['h1']) AND $rule['h1']) {
+                $title = apply_filters('woof_seo_h1', $this->replace_vars($rule['h1'], $this->get_current_replace_vars()));
+            }
+        }
         return $title;
     }
 
@@ -349,14 +368,14 @@ class WOOF_SEO {
         if ($this->is_search_going()) {
 
             if ($this->do_index()) {
-				add_filter( 'wpseo_canonical', '__return_false' );
+                add_filter('wpseo_canonical', '__return_false');
                 $current_url = $this->get_cleared_url(true);
             }
         }
 
-        $url_array  = explode('?', $current_url);
+        $url_array = explode('?', $current_url);
         $current_url = $url_array[0];
-        
+
         $canonical_link = apply_filters('woof_seo_canonical', $current_url);
         echo sprintf('<link rel="canonical" href="%s" />', esc_attr($canonical_link)) . "\r\n";
     }
@@ -387,5 +406,4 @@ class WOOF_SEO {
             echo '<div class="woof_seo_text">' . wp_kses_post(wp_unslash($txt)) . "</div>\r\n";
         }
     }
-
 }

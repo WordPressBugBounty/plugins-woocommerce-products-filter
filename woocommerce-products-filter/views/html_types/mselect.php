@@ -108,7 +108,13 @@ if (!function_exists('woof_draw_mselect_childs')) {
     $select_id = "woof_tax_mselect_" . $tax_slug;
     ?>
 <label class="woof_wcga_label_hide"  for="<?php echo esc_attr($select_id) ?>"><?php echo esc_html(WOOF_HELPER::wpml_translate($taxonomy_info)); ?></label>
-<select id="<?php echo esc_attr($select_id) ?>" class="woof_mselect woof_mselect_<?php echo esc_attr($tax_slug) ?>" data-placeholder="<?php echo esc_html(WOOF_HELPER::wpml_translate($taxonomy_info)) ?>" multiple="" size="<?php echo esc_attr('chosen' == $this->get_select_type() ? 1 : '') ?>" name="<?php echo esc_attr($this->check_slug($tax_slug)) ?>">
+<select aria-label="<?php echo esc_html(WOOF_HELPER::wpml_translate($taxonomy_info)); ?>" 
+		id="<?php echo esc_attr($select_id) ?>" 
+		class="woof_mselect woof_mselect_<?php echo esc_attr($tax_slug) ?>" 
+		data-placeholder="<?php echo esc_html(WOOF_HELPER::wpml_translate($taxonomy_info)) ?>" 
+		multiple="" 
+		size="<?php echo esc_attr('chosen' == $this->get_select_type() ? 1 : '') ?>" 
+		name="<?php echo esc_attr($this->check_slug($tax_slug)) ?>">
     <option value="0"></option>
 <?php
 $woof_tax_values = array();

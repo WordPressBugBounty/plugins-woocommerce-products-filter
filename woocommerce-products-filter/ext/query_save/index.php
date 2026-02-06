@@ -16,14 +16,14 @@ final class WOOF_EXT_QUERY_SAVE extends WOOF_EXT {
     public function __construct() {
         parent::__construct();
         //***
-        if (isset($this->woof_settings["query_save"]['search_count']) AND!empty($this->woof_settings["query_save"]['search_count'])) {
+        if (isset($this->woof_settings["query_save"]['search_count']) AND !empty($this->woof_settings["query_save"]['search_count'])) {
             $this->search_count = (int) $this->woof_settings["query_save"]['search_count'];
         }
 
-        if (isset($this->woof_settings["query_save"]['show_notice_product']) AND!empty($this->woof_settings["query_save"]['show_notice_product'])) {
+        if (isset($this->woof_settings["query_save"]['show_notice_product']) AND !empty($this->woof_settings["query_save"]['show_notice_product'])) {
             $this->show_notise_product = (int) $this->woof_settings["query_save"]['show_notice_product'];
         }
-        if (isset($this->woof_settings["query_save"]['show_notice']) AND!empty($this->woof_settings["query_save"]['show_notice'])) {
+        if (isset($this->woof_settings["query_save"]['show_notice']) AND !empty($this->woof_settings["query_save"]['show_notice'])) {
             $this->show_notise = (int) $this->woof_settings["query_save"]['show_notice'];
         }
 
@@ -83,79 +83,100 @@ final class WOOF_EXT_QUERY_SAVE extends WOOF_EXT {
     }
 
     public function woof_add_query() {
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_query_save_nonce'), 'query_save_nonce')) {
-			return false;
-		}		
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_query_save_nonce'), 'query_save_nonce')) {
+            return false;
+        }
+
+        if (!isset($_POST['link']) OR !isset($_POST['user_id'])) {
+            die();
+        }
+        
         global $WOOF, $wpdb, $wp_query;
 
-        if (!isset($_POST['link']) OR!isset($_POST['user_id'])) {
-            die();
+        $requested_user_id = intval($_POST['user_id']);
+
+        // The user can only save queries for himself, or he must be an administrator
+        if ($requested_user_id !== get_current_user_id() && !current_user_can('manage_options')) {
+            wp_die('You do not have permission to save queries for other users');
         }
 
         //***
-
         $data = array();
         $sanit_user_id = sanitize_key($_POST['user_id']);
         if ($sanit_user_id < 1) {
             die(); //if user id - wrong!!!
         }
 
-
         $key = uniqid('woofms_'); // Create key for this subscriber
         $data['key'] = $key;
-
         $data['user_id'] = $sanit_user_id;
         $data['link'] = esc_url_raw($_POST['link']);
+
         if (!isset($_POST['get_var'])) {
             $_POST['get_var'] = [];
         }
+
         $data['get'] = $this->woof_get_html_terms($this->sanitaz_array_r($_POST['get_var']));
         $saved_q = get_user_meta($data['user_id'], $this->user_meta_key, true);
+
         if (!is_array($saved_q)) {
             $saved_q = array();
         }
+
         $data['request'] = $this->sanitazed_sql_query(base64_decode(woof()->storage->get_val("woof_pm_request_" . $data['user_id'])));
+
         // If the request has banned operators or is empty
         if (!$data['request'] OR empty($data['request'])) {
             die();
         }
+
         //+++
-        //Remove limit frim request
+        //Remove limit from request
         $pos = stripos($data['request'], "LIMIT");
         if ($pos) {
             $data['request'] = substr($data['request'], 0, $pos);
         }
+
         if (!is_array($saved_q)) {
             $saved_q = array();
         }
+
         if (count($saved_q) >= $this->search_count) {
             die('<li class="woof_sq_max_count" >' . esc_html__('Сount is max', 'woocommerce-products-filter') . '</li>'); // Check limit count on backend
         }
+
         //+++
         $data['date'] = time();
-
         $data['title'] = esc_html__('My query', 'woocommerce-products-filter');
+
         if (isset($_POST['query_title']) AND $_POST['query_title']) {
             $data['title'] = sanitize_text_field($_POST['query_title']);
         }
 
         $saved_q[$key] = $data;
         update_user_meta($data['user_id'], $this->user_meta_key, $saved_q);
+
         //for Ajax redraw
-        $data['ext_link']= $this->get_ext_link();
-		$data['counter'] = count($saved_q);
-				
+        $data['ext_link'] = $this->get_ext_link();
+        $data['counter'] = count($saved_q);
         $cont = woof()->render_html($this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'item_list_query.php', $data);
-		wp_send_json($cont);
-        //die($cont);
+        wp_send_json($cont);
     }
 
     public function woof_remove_query() {
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_query_save_nonce'), 'query_save_nonce')) {
-			return false;
-		}	       		
-        if (!isset($_POST['key']) OR!isset($_POST['user_id'])) {
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_query_save_nonce'), 'query_save_nonce')) {
+            return false;
+        }
+
+        if (!isset($_POST['key']) OR !isset($_POST['user_id'])) {
             die('No data!');
+        }
+
+        $requested_user_id = intval($_POST['user_id']);
+
+        // A user can only delete requests for themselves, or they must be an administrator.
+        if ($requested_user_id !== get_current_user_id() && !current_user_can('manage_options')) {
+            wp_die('You do not have permission to remove queries for other users');
         }
 
         $user_id = sanitize_key($_POST['user_id']);
@@ -207,7 +228,7 @@ final class WOOF_EXT_QUERY_SAVE extends WOOF_EXT {
 
                     continue;
                 }
-            }			
+            }
             $tax = get_taxonomy($key);
             if (is_object($tax)) {
                 $name = $tax->labels->name;
@@ -266,8 +287,8 @@ final class WOOF_EXT_QUERY_SAVE extends WOOF_EXT {
         if (file_exists($this->get_ext_override_path() . 'views' . DIRECTORY_SEPARATOR . 'shortcodes' . DIRECTORY_SEPARATOR . 'woof_save_query.php')) {
             return woof()->render_html($this->get_ext_override_path() . 'views' . DIRECTORY_SEPARATOR . 'shortcodes' . DIRECTORY_SEPARATOR . 'woof_save_query.php', $data);
         }
-        
-        $data['ext_link']= $this->get_ext_link();
+
+        $data['ext_link'] = $this->get_ext_link();
         return woof()->render_html($this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'shortcodes' . DIRECTORY_SEPARATOR . 'woof_save_query.php', $data);
     }
 
@@ -291,16 +312,16 @@ final class WOOF_EXT_QUERY_SAVE extends WOOF_EXT {
             if ($id) {
                 ?>
                 <div class="woof_query_save_notice_product woof_query_save_notice_product_<?php echo esc_attr($id) ?>" data-id="<?php echo esc_attr($id) ?>" ></div>
-                <input type="hidden" class="woof_query_save_notice_nonce" value="<?php echo esc_attr(wp_create_nonce('query_save_nonce'))?>">
-			<?php
+                <input type="hidden" class="woof_query_save_notice_nonce" value="<?php echo esc_attr(wp_create_nonce('query_save_nonce')) ?>">
+                <?php
             }
         }
     }
 
     public function check_query() {
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_query_save_nonce'), 'query_save_nonce')) {
-			return false;
-		}
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_query_save_nonce'), 'query_save_nonce')) {
+            return false;
+        }
         if (!isset($_POST['product_ids'])) {
             die();
         }
@@ -355,7 +376,6 @@ final class WOOF_EXT_QUERY_SAVE extends WOOF_EXT {
         }
         die(json_encode($result));
     }
-
 }
 
 WOOF_EXT::$includes['html_type_objects']['query_save'] = new WOOF_EXT_QUERY_SAVE();

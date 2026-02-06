@@ -2346,3 +2346,8 @@ input[type="text"]:disabled {
     font-style: italic;
     color: green;
 }
+
+body.woocommerce_page_wc-settings #mainform .woof-tabs nav{
+    margin: 0 !important;
+}
+

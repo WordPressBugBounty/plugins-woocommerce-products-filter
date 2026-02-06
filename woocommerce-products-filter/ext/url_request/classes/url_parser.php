@@ -270,7 +270,8 @@ class WOOF_URL_PARSER {
         $request_url = $this->get_url_request($url);
 
         $url = str_replace(rtrim($request_url, '/'), '/', rtrim($url, '/'));  
-
+		$url = str_replace('//', '/', $url);
+		
         return $url;
     }
 

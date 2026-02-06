@@ -2,10 +2,10 @@
 Contributors: RealMag777
 Donate link: https://pluginus.net/affiliate/woocommerce-products-filter
 Tags: filter, product filter, woocommerce, woof, ajax filter
-Requires at least: 6.0.0
-Tested up to: 6.8
+Requires at least: 6.0
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.3.7
+Stable tag: 1.3.7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -182,33 +182,49 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 == Changelog ==
 
+= 1.3.7.4 =
+* some small fixes
+* 1 security fix, thanks to Athiwat Tiprasaharn (Jitlada) and wordfence.com
+
+= 1.3.7.3 =
+* some small fixes
+* 1 security fix, thanks to Athiwat Tiprasaharn (Jitlada) and wordfence.com
+
+= 1.3.7.2 =
+* some small fixes
+* 1 security fix, thanks to LionTree and wordfence.com
+
+= 1.3.7.1 =
+* set of small fixes
+* 1 security fix, thanks to LVT-tholv2k and Patchstack.com
+
 = 1.3.7 =
 * bunch of small fixes
 * new option in tab Design "Preserve the state of unchecked checkbox/radio hierarchy": Ability to retain the open/closed state of hierarchy blocks with unchecked checkboxes and radio buttons
 
 = 1.3.6.6 =
 * small fixes
-* one security fix, thanks to Hiroho from wordfence.com
+* one security fix, thanks to Hiroho and wordfence.com
 
 = 1.3.6.5 =
-* 1 security fix, thanks to Dimas Maulana from Patchstack.com
+* 1 security fix, thanks to Dimas Maulana and Patchstack.com
 
 = 1.3.6.4 =
-* 1 security fix, thanks to Daniel Scheidt from vorwerk.de
+* 1 security fix, thanks to Daniel Scheidt and vorwerk.de
 
 = 1.3.6.3 =
-* 1 security fix, thanks to shaman0x01 from wordfence.com
+* 1 security fix, thanks to shaman0x01 and wordfence.com
 
 = 1.3.6.2 =
-* 1 security fix, thanks to Rafie Muhammad from Patchstack.com
+* 1 security fix, thanks to Rafie Muhammad and Patchstack.com
 * 1 fix for WPML
 
 = 1.3.6.1 =
-* 1 security fix, thanks to Arkadiusz Hydzik from wordfence.com
+* 1 security fix, thanks to Arkadiusz Hydzik and wordfence.com
 * small fixes
 
 = 1.3.6 =
-* security fix, thanks to Richard Telleng (stueotue) from wordfence.com
+* security fix, thanks to Richard Telleng (stueotue) and wordfence.com
 * bunch of small fixes
 * [new features](https://products-filter.com/update-woocommerce-products-filter-v-3-3-6/)
 
@@ -217,11 +233,11 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 * 1 security fix, thanks to Patchstack.com
 
 = 1.3.5.2 =
-* 1 security fix, thanks to Dhabaleshwar Das from Patchstack.com
-* 1 security fix, thanks to Krzysztof Zając from Wordfence.com
+* 1 security fix, thanks to Dhabaleshwar Das and Patchstack.com
+* 1 security fix, thanks to Krzysztof Zając and Wordfence.com
 
 = 1.3.5.1 =
-* 1 security fix, thanks to Yudistira Arya from patchstack.com
+* 1 security fix, thanks to Yudistira Arya and patchstack.com
 
 = 1.3.5 =
 * bunch of small fixes
@@ -231,10 +247,10 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 * set of small fixes
 
 = 1.3.4.4 =
-* 1 security fix, thanks to Rafie M from patchstack.com
+* 1 security fix, thanks to Rafie M and patchstack.com
 
 = 1.3.4.3 =
-* 2 security fixes, thanks to Darius Sveikauskas from patchstack.com
+* 2 security fixes, thanks to Darius Sveikauskas and patchstack.com
 
 = 1.3.4.2 =
 * ACF fields ext is fixed
@@ -253,11 +269,11 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 = 1.3.2 =
 * Rebranding: WOOF to HUSKY
-* 1 security fixed, thanks to Animesh from WPScan
+* 1 security fixed, thanks to Animesh and WPScan
 
 = 1.3.1 =
 * New extension [Smart Designer](https://products-filter.com/smart-designer)
-* 1 security fixed, thanks to Animesh from WPScan
+* 1 security fixed, thanks to Animesh and WPScan
 
 = 1.3.0 =
 * code sanitizing
@@ -500,7 +516,7 @@ Plugin release. Operate all the basic functions.
 
 == License ==
 
-This plugin is copyright pluginus.net &copy; 2012-2025 with [GNU General Public License][] by realmag777.
+This plugin is copyright pluginus.net &copy; 2012-2026 with [GNU General Public License][] by realmag777.
 
 This program is free software; you can redistribute it and/or modify it under the terms of the [GNU General Public License][] as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 

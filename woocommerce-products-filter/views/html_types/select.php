@@ -112,7 +112,10 @@ if (!function_exists('woof_draw_select_childs')) {
 $select_id = "woof_tax_select_" . $tax_slug;
 ?>
 <label class="woof_wcga_label_hide"  for="<?php echo esc_attr($select_id) ?>"><?php echo esc_html(WOOF_HELPER::wpml_translate($taxonomy_info)); ?></label>
-<select id='<?php echo esc_attr($select_id) ?>' class="woof_select woof_select_<?php echo esc_attr($tax_slug) ?>" name="<?php echo esc_attr($this->check_slug($tax_slug)) ?>">
+<select aria-label="<?php echo esc_html(WOOF_HELPER::wpml_translate($taxonomy_info)); ?>" 
+		id='<?php echo esc_attr($select_id) ?>' 
+		class="woof_select woof_select_<?php echo esc_attr($tax_slug) ?>" 
+		name="<?php echo esc_attr($this->check_slug($tax_slug)) ?>">
     <option value="0"><?php echo esc_html(WOOF_HELPER::wpml_translate($taxonomy_info)) ?></option>
     <?php
     $woof_tax_values = array();

@@ -14,9 +14,9 @@ if (count($parse_tpl) > 1 AND $parse_tpl[0] == 'custom') {
     
 
     if (count($parse_tpl) > 1 AND $parse_tpl[0] == 'custom') {
-        woof()->render_html_e(get_stylesheet_directory() . DIRECTORY_SEPARATOR . 'woof_qs_templates' . DIRECTORY_SEPARATOR . $parse_tpl[1] . DIRECTORY_SEPARATOR . 'output.php', $data);
+        woof()->render_html_e(get_stylesheet_directory() . DIRECTORY_SEPARATOR . 'woof_qs_templates' . DIRECTORY_SEPARATOR . sanitize_key($parse_tpl[1]) . DIRECTORY_SEPARATOR . 'output.php', $data);
     } else {
-        woof()->render_html_e(WOOF_EXT_PATH . 'quick_search' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $parse_tpl[0] . DIRECTORY_SEPARATOR . 'output.php', $data);
+        woof()->render_html_e(WOOF_EXT_PATH . 'quick_search' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . sanitize_key($parse_tpl[0]) . DIRECTORY_SEPARATOR . 'output.php', $data);
     }
     ?>
 </div>

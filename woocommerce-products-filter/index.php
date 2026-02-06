@@ -4,17 +4,18 @@
   Plugin URI: https://products-filter.com/
   Description: HUSKY - WooCommerce Products Filter Professional. Flexible, easy and robust products filter for WooCommerce store site!
   Requires at least: WP 6.0
-  Tested up to: WP 6.8
+  Tested up to: WP 6.9
   Author: realmag777
   Author URI: https://pluginus.net/
-  Version: 1.3.7
+  Version: 1.3.7.4
   Requires PHP: 7.4
   Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
   Text Domain: woocommerce-products-filter
   Domain Path: /languages
   Forum URI: https://pluginus.net/support/forum/woof-woocommerce-products-filter/
   WC requires at least: 6.0
-  WC tested up to: 9.8
+  WC tested up to: 10.4
+  Requires Plugins: woocommerce
  */
 
 //update_option('woof_settings', []);//dev: nearly absolute reset of the plugin settings
@@ -56,7 +57,7 @@ define('WOOF_PATH', plugin_dir_path(__FILE__));
 define('WOOF_LINK', plugin_dir_url(__FILE__));
 define('WOOF_PLUGIN_NAME', plugin_basename(__FILE__));
 define('WOOF_EXT_PATH', WOOF_PATH . 'ext/');
-define('WOOF_VERSION', '1.3.7');
+define('WOOF_VERSION', '1.3.7.4');
 //define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define('WOOF_MIN_WOOCOMMERCE_VERSION', '6.0');
 //classes
@@ -74,7 +75,7 @@ include WOOF_PATH . 'lib/alert/index.php';
 //***
 include WOOF_PATH . 'installer/first_settings.php';
 
-//23-05-2025
+//15-12-2025
 final class WOOF {
 
     public $settings = array();
@@ -663,6 +664,22 @@ final class WOOF {
     }
 
     public function get_swoof_search_slug() {
+        // Early initialization of front_builder if needed and not yet loaded
+        //fix 11-12-2025 https://pluginus.net/support/topic/pagination-showing-incorrect-page-count-and-404-errors-with-avada-husky-filter
+        if (!isset(WOOF_EXT::$includes['applications']['front_builder'])) {
+            $fb_path = WOOF_PATH . 'ext' . DIRECTORY_SEPARATOR . 'front_builder';
+
+            // Check if front_builder is activated
+            if (WOOF_EXT::is_ext_activated($fb_path)) {
+                // Force early load - this will add the woof_filter_search_slug filter
+                include_once $fb_path . DIRECTORY_SEPARATOR . 'index.php';
+            }
+        }
+
+        if (function_exists('woof_get_slug')) {
+            return woof_get_slug();
+        }
+
         return apply_filters('woof_filter_search_slug', $this->get_swoof_search_slug_opt());
     }
 
@@ -955,6 +972,8 @@ final class WOOF {
             woof_really_curr_tax = {term_id:<?php echo intval($curr_tax->term_id) ?>, taxonomy: "<?php echo esc_html($curr_tax->taxonomy) ?>"};
             <?php
         }
+
+        $clear_all_text = esc_html__('Clear All', 'woocommerce-products-filter');
         ?>
 
         var woof_ajaxurl = "<?php echo esc_url(admin_url('admin-ajax.php')) ?>";
@@ -969,7 +988,7 @@ final class WOOF {
         'rating': "<?php esc_html_e('rating', 'woocommerce-products-filter') ?>",
         'price': "<?php esc_html_e('price low to high', 'woocommerce-products-filter') ?>",
         'price-desc': "<?php esc_html_e('price high to low', 'woocommerce-products-filter') ?>",
-        'clear_all': "<?php esc_html_e(apply_filters('woof_clear_all_text', esc_html__('Clear All', 'woocommerce-products-filter'))) ?>",
+        'clear_all': "<?php echo apply_filters('woof_clear_all_text', $clear_all_text) ?>",
         'list_opener': "<?php esc_html_e('Сhild list opener', 'woocommerce-products-filter') ?>",
         };
 
@@ -2070,8 +2089,7 @@ final class WOOF {
         $data = $this->get_request_data();
         $res = array();
 
-        $woo_taxonomies = NULL;
-        {
+        $woo_taxonomies = NULL; {
             $woo_taxonomies = get_object_taxonomies('product');
         }
 
@@ -2455,7 +2473,7 @@ final class WOOF {
         ?>
 
         <?php if ($is_ajax == 1): ?>
-                <?php ?>
+            <?php ?>
             <div id="woof_results_by_ajax" data-count="<?php echo intval($products->found_posts) ?>"  class="woof_results_by_ajax_shortcode" data-shortcode="<?php echo esc_attr($shortcode_txt) ?>">
                 <?php
                 //endif;
@@ -2551,7 +2569,7 @@ final class WOOF {
                         }
                         ?>
 
-                        <?php //wc_get_template('loop/loop-end.php');                                                                                                                              ?>
+                        <?php //wc_get_template('loop/loop-end.php');                                                                                                                               ?>
 
                         <?php
                         //woo_pagenav(); - for wp theme canvas
@@ -2605,7 +2623,7 @@ final class WOOF {
                 ?>
 
                 <?php if ($is_ajax == 1): ?>
-            <?php if (!get_option('woof_try_ajax', 0)): ?>
+                    <?php if (!get_option('woof_try_ajax', 0)): ?>
                     </div>
 
                 <?php endif; ?>
@@ -3020,7 +3038,7 @@ final class WOOF {
         //if we are on the category products page, or any another product taxonomy page
         public function get_really_current_term() {
 
-            if (wc_current_theme_is_fse_theme() || (isset($this->settings['check_really_tax']) && intval($this->settings['check_really_tax']) === 1)) {
+            if (wp_is_block_theme() || (isset($this->settings['check_really_tax']) && intval($this->settings['check_really_tax']) === 1)) {
 
                 if (!defined('DOING_AJAX') && !is_page()) {
                     global $wp_query;
@@ -3262,8 +3280,14 @@ final class WOOF {
                 }
 
                 foreach ($directories['default'] as $path) {
-                    //if (in_array(md5($path), $activated))
                     if (WOOF_EXT::is_ext_activated($path)) {
+                        $ext_name = basename($path);
+                        //fix 11-12-2025
+                        // Skip if already loaded early (like front_builder)
+                        if (isset(WOOF_EXT::$includes['applications'][$ext_name])) {
+                            continue; // Already loaded early, skip
+                        }
+
                         include_once $path . DIRECTORY_SEPARATOR . 'index.php';
                     }
                 }

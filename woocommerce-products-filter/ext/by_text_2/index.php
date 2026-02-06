@@ -65,7 +65,7 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
     }
 
     public function cache_compatibility($args, $type) {
-        
+
         $request = woof()->get_request_data();
         if (isset($request['woof_text']) AND $request['woof_text']) {
             $args['woof_text'] = $request['woof_text'];
@@ -75,7 +75,7 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
     }
 
     public function wp_head() {
-        
+
         self::$includes['js_code_custom']['woof_' . $this->html_type . '_html_items'] = $this->get_js();
         self::$includes['css_code_custom'][$this->index] = $this->get_style();
         $request = woof()->get_request_data();
@@ -93,7 +93,7 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
     }
 
     public function get_js() {
-        
+
         ob_start();
         ?>
         var woof_text_autocomplete = 0;
@@ -117,7 +117,7 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
     }
 
     public function get_style() {
-        
+
         ob_start();
         if (isset(woof()->settings['by_text_2']['image'])) {
             if (!empty(woof()->settings['by_text_2']['image'])) {
@@ -133,7 +133,7 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
 
     //shortcode
     public function woof_text_filter($args = array()) {
-        
+
         if (!is_array($args)) {
             $args = array();
         }
@@ -148,7 +148,7 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
 
     //settings page hook
     public function woof_print_html_type_options() {
-        
+
         woof()->render_html_e($this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'options.php', array(
             'key' => $this->html_type,
             "woof_settings" => get_option('woof_settings', array())
@@ -162,12 +162,13 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
     }
 
     public function woof_post_text_filter($where = '', $query = null) {
-        global $wp_query;
-        
+        global $wpdb, $wp_query;
+
         $request = woof()->get_request_data();
 
-        //***
-
+        //=======================
+        // VALIDATION: Check applicability only to product
+        //=======================
         if (!defined('DOING_AJAX')) {
             if (!isset($query->query_vars['post_type']) && !isset($query->query_vars['wc_query'])) {
                 return $where;
@@ -178,300 +179,315 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
                         return $where;
                     }
                 } elseif (!isset($query->query_vars['wc_query']) OR $query->query_vars['wc_query'] != 'product_query') {
-
                     return $where;
                 }
             }
         }
 
-        //***      
-        if (!isset($request['woof_text']) OR!$request['woof_text']) {
+        //=======================
+        // CHECK: Is there any text to search for?
+        //=======================
+        if (!isset($request['woof_text']) OR !$request['woof_text']) {
             return $where;
         }
 
-        if (defined('DOING_AJAX')) {
-            $conditions = (isset($wp_query->query_vars['post_type']) AND $wp_query->query_vars['post_type'] == 'product') OR WOOF_REQUEST::isset('woof_products_doing');
-        } else {
-            $conditions = WOOF_REQUEST::isset('woof_products_doing');
-        }
-        //***
-        {
-            if (woof()->is_isset_in_request_data('woof_text')) {
+        //=======================
+        // CONDITION: Checking woof_products_doing
+        //=======================
+        /*
+         * rudiment, commented
+          if (defined('DOING_AJAX')) {
+          $conditions = (isset($wp_query->query_vars['post_type']) AND $wp_query->query_vars['post_type'] == 'product') OR WOOF_REQUEST::isset('woof_products_doing');
+          } else {
+          $conditions = WOOF_REQUEST::isset('woof_products_doing');
+          }
+         * 
+         */
 
-                $woof_text = wp_specialchars_decode(trim(urldecode($request['woof_text'])));
-                $woof_text = trim(WOOF_HELPER::strtolower($woof_text));
-                $woof_text = preg_replace('/\s+/', ' ', $woof_text);
-                if (!$woof_text) {
-                    return $where;
+        if (woof()->is_isset_in_request_data('woof_text')) {
+            // SAFETY: We normalize the text once at the beginning
+            $woof_text_raw = wp_specialchars_decode(trim(urldecode($request['woof_text'])));
+            $woof_text_raw = trim(WOOF_HELPER::strtolower($woof_text_raw));
+            $woof_text_raw = preg_replace('/\s+/', ' ', $woof_text_raw);
+
+            if (!$woof_text_raw) {
+                return $where;
+            }
+
+            // ===== MAJOR FIX =====
+            // Never interpolate user input directly into SQL!
+            // Use $wpdb->prepare() for ALL cases
+
+            $use_like = apply_filters('woof_text_search_like_option', false);
+            $search_by_full_word = false;
+
+            if (isset(woof()->settings['by_text_2']['search_by_full_word'])) {
+                $search_by_full_word = (int) woof()->settings['by_text_2']['search_by_full_word'];
+            }
+
+            $behavior = 'title';
+            if (isset(woof()->settings['by_text_2']['behavior'])) {
+                $behavior = woof()->settings['by_text_2']['behavior'];
+            }
+
+            if (WOOF_REQUEST::isset('auto_search_by_behavior') AND !empty(WOOF_REQUEST::get('auto_search_by_behavior'))) {
+                $behavior = WOOF_REQUEST::get('auto_search_by_behavior');
+            }
+
+            $text_where = '';
+
+            //=======================
+            // BRANCH 1: REGEXP (with validation)
+            //=======================
+            if (!$use_like) {
+                // ReDoS protection: limit the length of the pattern
+                if (strlen($woof_text_raw) > 255) {
+                    $woof_text_raw = substr($woof_text_raw, 0, 255);
                 }
-                if (!apply_filters('woof_text_search_like_option', false)) {
-                    $woof_text = preg_quote($woof_text, '&');
-                    $woof_text = str_replace(' ', '?(.*)', $woof_text);
-                    $woof_text = stripslashes($woof_text);
-                    $woof_text = str_replace("&#039;", "'", $woof_text);
 
-                    $woof_text = str_replace("\&quot;", "\"", $woof_text);
-                    $woof_text = str_replace("\(", "\\\(", $woof_text);
-                    $woof_text = str_replace("\)", "\\\)", $woof_text);
-                    //http://dev.mysql.com/doc/refman/5.7/en/regexp.html
-                    $search_by_full_word = false;
+                // Escaping for REGEXP using preg_quote
+                $pattern = preg_quote($woof_text_raw, '/');
 
-                    if (isset(woof()->settings['by_text_2']['search_by_full_word'])) {
-                        $search_by_full_word = (int) woof()->settings['by_text_2']['search_by_full_word'];
+                // Replace spaces with the REGEXP pattern BEFORE adding word boundaries
+                $pattern = str_replace(' ', '(.*)', $pattern);
+
+                // Add word boundaries if needed.
+                if ($search_by_full_word) {
+                    $pattern = '[[:<:]]' . $pattern . '[[:>:]]';
+                }
+
+                // EVERYONE uses $wpdb->prepare() - SAFE!
+                switch ($behavior) {
+                    case 'content':
+                        $text_where = $wpdb->prepare("LOWER(post_content) REGEXP %s", $pattern);
+                        break;
+
+                    case 'title_or_content':
+                        $text_where = $wpdb->prepare(
+                                "(LOWER(post_title) REGEXP %s OR LOWER(post_content) REGEXP %s)",
+                                $pattern, $pattern
+                        );
+                        break;
+
+                    case 'title_and_content':
+                        $text_where = $wpdb->prepare(
+                                "(LOWER(post_title) REGEXP %s AND LOWER(post_content) REGEXP %s)",
+                                $pattern, $pattern
+                        );
+                        break;
+
+                    case 'excerpt':
+                        $text_where = $wpdb->prepare("LOWER(post_excerpt) REGEXP %s", $pattern);
+                        break;
+
+                    case 'content_or_excerpt':
+                        $text_where = $wpdb->prepare(
+                                "(LOWER(post_excerpt) REGEXP %s OR LOWER(post_content) REGEXP %s)",
+                                $pattern, $pattern
+                        );
+                        break;
+
+                    case 'title_or_content_or_excerpt':
+                        $text_where = $wpdb->prepare(
+                                "(LOWER(post_title) REGEXP %s OR LOWER(post_excerpt) REGEXP %s OR LOWER(post_content) REGEXP %s)",
+                                $pattern, $pattern, $pattern
+                        );
+                        break;
+
+                    default:
+                        $text_where = $wpdb->prepare("LOWER(post_title) REGEXP %s", $pattern);
+                }
+            }
+            //=======================
+            // BRANCH 2: LIKE (with correct search_by_full_word handling)
+            //=======================
+            else {
+                $words = array_filter(explode(' ', $woof_text_raw));
+                $parts = [];
+
+                foreach ($words as $word) {
+                    // Escape for LIKE
+                    $word_safe = $wpdb->esc_like($word);
+
+                    // We apply search_by_full_word logic
+                    if (!$search_by_full_word) {
+                        $word_safe = '%' . $word_safe . '%';
                     }
 
-                    if ($search_by_full_word) {
-                        $woof_text = '[[:<:]]' . $woof_text . '[[:>:]]';
-                    }
-
-                    //***
-
-                    $behavior = 'title';
-                    if (isset(woof()->settings['by_text_2']['behavior'])) {
-                        $behavior = woof()->settings['by_text_2']['behavior'];
-                    }
-
-                    if (WOOF_REQUEST::isset('auto_search_by_behavior') AND!empty(WOOF_REQUEST::get('auto_search_by_behavior'))) {
-                        $behavior = WOOF_REQUEST::get('auto_search_by_behavior');
-                    }
-
-                    $text_where = "";
-                    //***
                     switch ($behavior) {
                         case 'content':
-                            $text_where .= " LOWER(post_content) REGEXP '{$woof_text}'";
+                            $parts[] = $wpdb->prepare("LOWER(post_content) LIKE %s", $word_safe);
                             break;
 
                         case 'title_or_content':
-                            $text_where .= " ( LOWER(post_title) REGEXP '{$woof_text}' OR LOWER(post_content) REGEXP '{$woof_text}')";
+                            $parts[] = $wpdb->prepare(
+                                    "(LOWER(post_title) LIKE %s OR LOWER(post_content) LIKE %s)",
+                                    $word_safe, $word_safe
+                            );
                             break;
 
                         case 'title_and_content':
-                            $text_where .= " ( LOWER(post_title) REGEXP '{$woof_text}' AND LOWER(post_content) REGEXP '{$woof_text}')";
+                            $parts[] = $wpdb->prepare(
+                                    "(LOWER(post_title) LIKE %s AND LOWER(post_content) LIKE %s)",
+                                    $word_safe, $word_safe
+                            );
                             break;
 
                         case 'excerpt':
-                            $text_where .= " LOWER(post_excerpt) REGEXP '{$woof_text}'";
+                            $parts[] = $wpdb->prepare("LOWER(post_excerpt) LIKE %s", $word_safe);
                             break;
 
                         case 'content_or_excerpt':
-                            $text_where .= " ( LOWER(post_excerpt) REGEXP '{$woof_text}' OR LOWER(post_content) REGEXP '{$woof_text}')";
+                            $parts[] = $wpdb->prepare(
+                                    "(LOWER(post_excerpt) LIKE %s OR LOWER(post_content) LIKE %s)",
+                                    $word_safe, $word_safe
+                            );
                             break;
 
                         case 'title_or_content_or_excerpt':
-                            $text_where .= "  (( LOWER(post_title) REGEXP '{$woof_text}') OR ( LOWER(post_excerpt) REGEXP '{$woof_text}') OR ( LOWER(post_content) REGEXP '{$woof_text}'))";
+                            $parts[] = $wpdb->prepare(
+                                    "(LOWER(post_title) LIKE %s OR LOWER(post_excerpt) LIKE %s OR LOWER(post_content) LIKE %s)",
+                                    $word_safe, $word_safe, $word_safe
+                            );
                             break;
 
                         default:
-                            //only by title
-                            $text_where .= "  LOWER(post_title) REGEXP '{$woof_text}'";
-                            break;
+                            $parts[] = $wpdb->prepare("LOWER(post_title) LIKE %s", $word_safe);
                     }
+                }
+
+                $text_where = !empty($parts) ? implode(' AND ', $parts) : '';
+            }
+
+            //=======================
+            // FEATURE: Search by variation description
+            //=======================
+            $var_desc_where = '';
+            if (!empty(woof()->settings['by_text_2']['search_desc_variant']) && !in_array($behavior, ['excerpt', 'content', 'title'], true)) {
+
+                // SECURE: Using prepare()
+                if ($use_like) {
+                    $sql = $wpdb->prepare(
+                            "SELECT posts.ID
+                    FROM {$wpdb->posts} AS posts
+                    LEFT JOIN {$wpdb->postmeta} AS postmeta ON posts.ID = postmeta.post_id
+                    WHERE posts.post_type = 'product_variation'
+                    AND postmeta.meta_key = '_variation_description'
+                    AND postmeta.meta_value LIKE %s",
+                            '%' . $wpdb->esc_like($woof_text_raw) . '%'
+                    );
                 } else {
-                    $woof_text = str_replace("\&#039;", "\'", $woof_text);
-                    $woof_text = str_replace("\&quot;", "\"", $woof_text);
-                    $woof_text = str_replace("\(", "\\\(", $woof_text);
-                    $woof_text = str_replace("\)", "\\\)", $woof_text);
-
-                    $search_by_full_word = false;
-
-                    if (isset(woof()->settings['by_text_2']['search_by_full_word'])) {
-                        $search_by_full_word = (int) woof()->settings['by_text_2']['search_by_full_word'];
+                    $pattern_var = preg_quote($woof_text_raw, '/');
+                    $pattern_var = str_replace(' ', '(.*)', $pattern_var);
+                    if ($search_by_full_word) {
+                        $pattern_var = '[[:<:]]' . $pattern_var . '[[:>:]]';
                     }
-                    $woof_text_array = explode(" ", $woof_text);
-                    $text_where = "";
-                    $text_array = array();
-                    foreach ($woof_text_array as $text) {
 
-                        if (!$search_by_full_word) {
-                            $text = '%' . $text . '%';
-                        }
-
-                        $behavior = 'title';
-                        if (isset(woof()->settings['by_text_2']['behavior'])) {
-                            $behavior = woof()->settings['by_text_2']['behavior'];
-                        }
-
-                        if (WOOF_REQUEST::isset('auto_search_by_behavior') AND!empty(WOOF_REQUEST::get('auto_search_by_behavior'))) {
-                            $behavior = WOOF_REQUEST::get('auto_search_by_behavior');
-                        }
-
-
-                        //***
-                        switch ($behavior) {
-                            case 'content':
-                                $text_array[] = "( LOWER(post_content) LIKE '{$text}')";
-                                break;
-
-                            case 'title_or_content':
-                                $text_array[] = " ( LOWER(post_title) LIKE '{$text}' OR LOWER(post_content) LIKE '{$text}')";
-                                break;
-
-                            case 'title_and_content':
-                                $text_array[] = " ( LOWER(post_title) LIKE '{$text}' AND LOWER(post_content) LIKE '{$text}')";
-                                break;
-
-                            case 'excerpt':
-                                $text_array[] = " LOWER(post_excerpt) LIKE '{$text}'";
-                                break;
-
-                            case 'content_or_excerpt':
-                                $text_array[] = " ( LOWER(post_excerpt) LIKE '{$text}' OR LOWER(post_content) LIKE '{$text}')";
-                                break;
-
-                            case 'title_or_content_or_excerpt':
-                                $text_array[] .= "  (( LOWER(post_title) LIKE '{$text}') OR ( LOWER(post_excerpt) LIKE '{$text}') OR ( LOWER(post_content) LIKE '{$woof_text}'))";
-                                break;
-
-                            default:
-                                //only by title
-                                $text_array[] = " ( LOWER(post_title) LIKE '{$text}' ) ";
-                                break;
-                        }
-                    }
-                    $text_where = implode(" AND ", $text_array);
+                    $sql = $wpdb->prepare(
+                            "SELECT posts.ID
+                    FROM {$wpdb->posts} AS posts
+                    LEFT JOIN {$wpdb->postmeta} AS postmeta ON posts.ID = postmeta.post_id
+                    WHERE posts.post_type = 'product_variation'
+                    AND postmeta.meta_key = '_variation_description'
+                    AND LOWER(postmeta.meta_value) REGEXP %s",
+                            $pattern_var
+                    );
                 }
-                global $wpdb;
 
-                //_variation_description
-                $var_desc_where = "";
-                if (isset(woof()->settings['by_text_2']['search_desc_variant']) AND woof()->settings['by_text_2']['search_desc_variant']) {
-                    if (!in_array($behavior, array('excerpt', 'content', 'title'))) {
-                        $condtion_string = "";
-                        if (!empty($woof_text)) {
+                $product_variations = $wpdb->get_col($sql);
 
-                            if (!apply_filters('woof_text_search_like_option', false)) {
-                                $condtion_string .= " LOWER(postmeta.meta_value) REGEXP '{$woof_text}'";
-                            } else {
-                                $condtion_string .= " postmeta.meta_value LIKE '%$woof_text%'";
-                            }
+                if (!empty($product_variations)) {
+                    $product_ids = array_map('intval', $product_variations);
+
+                    // Obtaining parent IDs securely
+                    $ids_string = implode(',', $product_ids);
+                    $parent_ids = $wpdb->get_col(
+                            "SELECT DISTINCT post_parent
+                    FROM {$wpdb->posts}
+                    WHERE ID IN ($ids_string) AND post_parent > 0"
+                    );
+
+                    $all_ids = array_unique(array_merge($product_ids, (array) $parent_ids));
+                    if (!empty($all_ids)) {
+                        $var_desc_where = ' OR ' . $wpdb->posts . '.ID IN(' . implode(',', $all_ids) . ')';
+                    }
+                }
+            }
+
+            //=======================
+            // FEATURE:Search by SKU
+            //=======================
+            $sku_where = '';
+            if (!empty(woof()->settings['by_text_2']['sku_compatibility'])) {
+
+                // IMPORTANT: Preserve the original URL decode
+                $skus_raw = explode(',', $request['woof_text']);
+                $skus_raw = array_map('urldecode', $skus_raw);
+                $skus_raw = array_map('trim', $skus_raw);
+                $skus_raw = array_filter($skus_raw);
+
+                if (!empty($skus_raw)) {
+                    $sku_logic = woof()->settings['by_sku']['logic'] ?? 'LIKE';
+                    $sku_conditions = [];
+
+                    foreach ($skus_raw as $sku) {
+                        if ($sku_logic === '=') {
+                            $sku_conditions[] = $wpdb->prepare("postmeta.meta_value = %s", $sku);
+                        } else {
+                            $sku_conditions[] = $wpdb->prepare("postmeta.meta_value LIKE %s", '%' . $wpdb->esc_like($sku) . '%');
                         }
+                    }
 
-                        //***
+                    if (!empty($sku_conditions)) {
+                        $where_clause = implode(' OR ', $sku_conditions);
 
-                        $product_variations = $wpdb->get_results("
+                        $sql = "
                         SELECT posts.ID
-                        FROM $wpdb->posts AS posts
-                        LEFT JOIN $wpdb->postmeta AS postmeta ON ( posts.ID = postmeta.post_id )
-                        WHERE posts.post_type IN ('product_variation')
-                        AND postmeta.meta_key = '_variation_description'
-                        AND ($condtion_string)", ARRAY_N);
-                        //+++
-                        $product_variations_ids = array();
+                        FROM {$wpdb->posts} AS posts
+                        LEFT JOIN {$wpdb->postmeta} AS postmeta ON posts.ID = postmeta.post_id
+                        WHERE posts.post_type IN ('product_variation', 'product')
+                        AND postmeta.meta_key = '_sku'
+                        AND ($where_clause)
+                    ";
+
+                        $product_variations = $wpdb->get_col($sql);
+
                         if (!empty($product_variations)) {
-                            foreach ($product_variations as $v) {
-                                $product_variations_ids[] = $v[0];
-                            }
+                            $product_ids = array_map('intval', $product_variations);
 
-                            //+++
-                            $product_variations_ids_string = implode(',', $product_variations_ids);
+                            $ids_string = implode(',', $product_ids);
+                            $parent_ids = $wpdb->get_col(
+                                    "SELECT DISTINCT post_parent
+                            FROM {$wpdb->posts}
+                            WHERE ID IN ($ids_string) AND post_parent > 0"
+                            );
 
-                            $products = $wpdb->get_results("
-                            SELECT posts.post_parent
-                            FROM $wpdb->posts AS posts
-                            WHERE posts.ID IN ($product_variations_ids_string) AND posts.post_parent > 0", ARRAY_N);
-                            //+++
-                            $product_ids = array();
-                            if (!empty($products)) {
-                                foreach ($products as $v) {
-                                    $product_ids[] = $v[0];
-                                }
+                            $all_ids = array_unique(array_merge($product_ids, (array) $parent_ids));
+                            if (!empty($all_ids)) {
+                                $sku_where = ' OR ' . $wpdb->posts . '.ID IN(' . implode(',', $all_ids) . ')';
                             }
-
-                            $product_ids = implode(',', array_merge($product_ids, $product_variations_ids));
-                            $var_desc_where .= " $wpdb->posts.ID IN($product_ids)";
-                        }
-                        if ($var_desc_where AND!empty($var_desc_where)) {
-                            $condition = " OR ";
-                            if ($behavior = 'title_and_content') {
-                                $condition = " OR ";
-                            }
-                            $var_desc_where = $condition . $var_desc_where;
                         }
                     }
                 }
+            }
 
-
-                //by SKU  *******************
-                $sku_where = "";
-                if (woof()->settings['by_text_2']['sku_compatibility']) {
-                    //$woof_text = trim(urldecode($request['woof_sku']));
-                    $woof_sku_request = explode(',', $request['woof_text']);
-                    $woof_sku_request = array_map('urldecode', $woof_sku_request);
-                    $woof_sku_request = array_map('trim', $woof_sku_request);
-                    //***
-                    if (!isset(woof()->settings['by_sku']['logic']) OR empty(woof()->settings['by_sku']['logic'])) {
-                        woof()->settings['by_sku']['logic'] = 'LIKE';
-                    }
-
-                    $condtion_string = "";
-                    if (!empty($woof_sku_request)) {
-                        foreach ($woof_sku_request as $k => $sku) {
-                            if ($k > 0) {
-                                $condtion_string .= " OR ";
-                            }
-                            if (woof()->settings['by_sku']['logic'] == '=') {
-                                $condtion_string .= "postmeta.meta_value " . woof()->settings['by_sku']['logic']. " '$sku'";
-                            } else {
-                                $condtion_string .= "postmeta.meta_value " . woof()->settings['by_sku']['logic']. " '%$sku%'";
-                            }
-                        }
-                    }
-
-                    //***
-
-                    $product_variations = $wpdb->get_results("
-                    SELECT posts.ID
-                    FROM $wpdb->posts AS posts
-                    LEFT JOIN $wpdb->postmeta AS postmeta ON ( posts.ID = postmeta.post_id )
-                    WHERE posts.post_type IN ('product_variation','product')
-                    AND postmeta.meta_key = '_sku'
-                    AND ($condtion_string)", ARRAY_N);
-                    //+++
-                    $product_variations_ids = array();
-                    if (!empty($product_variations)) {
-                        foreach ($product_variations as $v) {
-                            $product_variations_ids[] = $v[0];
-                        }
-
-                        //+++
-                        $product_variations_ids_string = implode(',', $product_variations_ids);
-
-                        $products = $wpdb->get_results("
-                        SELECT posts.post_parent
-                        FROM $wpdb->posts AS posts
-                        WHERE posts.ID IN ($product_variations_ids_string) AND posts.post_parent > 0", ARRAY_N);
-                        //+++
-                        $product_ids = array();
-                        if (!empty($products)) {
-                            foreach ($products as $v) {
-                                $product_ids[] = $v[0];
-                            }
-                        }
-                        $product_ids = implode(',', array_merge($product_ids, $product_variations_ids));
-                        $sku_where .= " $wpdb->posts.ID IN($product_ids)";
-                        $where_sku = " AND $wpdb->posts.ID IN($product_ids)";
-                    }
-                    if ($sku_where AND!empty($sku_where)) {
-                        $sku_where = " OR " . $sku_where;
-                    }
-                }
-                //by SKU end  *******************
-
-
-                $where .= " AND ( " . apply_filters('woof_text_search_query', $text_where . $var_desc_where . $sku_where, $woof_text) . " )   ";
+            //=======================
+            // FINAL: We collect WHERE
+            //=======================
+            if (!empty($text_where)) {
+                $final = apply_filters('woof_text_search_query', $text_where . $var_desc_where . $sku_where, $woof_text_raw);
+                $where .= " AND ( $final ) ";
             }
         }
-        //***
 
         return $where;
     }
 
     //ajax
     public function woof_text_autocomplete() {
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_text_search_nonce'), 'text_search_nonce')) {
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_text_search_nonce'), 'text_search_nonce')) {
             die('Stop!');
-        }		
+        }
         $results = array();
         $args = array(
             'nopaging' => true,
@@ -507,7 +523,7 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
                 );
                 if (has_post_thumbnail($p->ID)) {
                     $img_src = wp_get_attachment_image_src(get_post_thumbnail_id($p->ID), 'single-post-thumbnail');
-                    $data['icon'] = $img_src[0]; 
+                    $data['icon'] = $img_src[0];
                 } else {
                     $data['icon'] = WOOF_LINK . 'img/not-found.jpg';
                 }
@@ -525,7 +541,6 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
 
         die(json_encode($results));
     }
-
 }
 
 WOOF_EXT::$includes['html_type_objects']['by_text_2'] = new WOOF_EXT_BY_TEXT_2();

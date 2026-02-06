@@ -29,10 +29,10 @@
                 <?php if ($this->show_notes): ?>
 
                     <br>
-                    <?php if (time() < 1733094000): ?>
+                    <?php if (time() < 1764676740): ?>
 
                         <a href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter/11498469" target="_blank" class="">
-                            <img src="https://pluginus.net/wp-content/uploads/2024/11/envato-cybersale-2024.png" width="120" alt="Cybermonday AND Blackfriday" />
+                            <img src="https://pluginus.net/wp-content/uploads/2025/11/DiscountBanner_ItemPreviewBanner_Launch_616x215_50__x2.png" width="120" alt="Cybermonday AND Blackfriday" />
                         </a>
 
 
@@ -2471,8 +2471,8 @@
                         </div>
 
                         <ul class="woof__features-gallery woof__col-6">
-                            <li><a target="_blank" href="https://pluginus.net/affiliate/woocommerce-products-filter"><img class="woof-rounded" width="300" src="<?php echo esc_url(WOOF_LINK) ?>/img/plugin_options/banners/woof.png"></a></li>
-                            <li><a target="_blank" href="https://pluginus.net/affiliate/woocommerce-bulk-editor"><img class="woof-rounded" width="300" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/bear.png"></a></li>
+                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter"><img class="woof-rounded" width="300" src="<?php echo esc_url(WOOF_LINK) ?>/img/plugin_options/banners/woof.png"></a></li>
+                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woobe-woocommerce-bulk-editor-professional/21779835"><img class="woof-rounded" width="300" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/bear.png"></a></li>
                             <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580"><img class="woof-rounded" width="300" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/woot.png"></a></li>
                             <li><a target="_blank" href="https://codecanyon.pluginus.net/item/wordpress-posts-bulk-editor-professional/24376112" title="WPBE - WordPress Posts Bulk Editor Professional"><img class="woof-rounded" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/wpbe.png" alt="WPBE - WordPress Posts Bulk Editor Professional" width="300"></a></li>
                         </ul>
@@ -3058,17 +3058,17 @@
                 <tr>
                     <td>
                         <h3 class="woof_tomato"><?php esc_html_e("HUSKY FULL VERSION", 'woocommerce-products-filter') ?>:</h3>
-                        <a href="https://pluginus.net/affiliate/woocommerce-products-filter" target="_blank"><img src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/woof.png" alt="<?php esc_html_e("full version of the plugin", 'woocommerce-products-filter'); ?>"></a>
+                        <a href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter" target="_blank"><img src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/woof.png" alt="<?php esc_html_e("full version of the plugin", 'woocommerce-products-filter'); ?>"></a>
                     </td>
 
                     <td>
                         <h3><?php esc_html_e("WooCommerce Bulk Editor", 'woocommerce-products-filter') ?>:</h3>
-                        <a href="https://pluginus.net/affiliate/woocommerce-bulk-editor" target="_blank"><img src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/bear.png" alt="<?php esc_html_e("WOOBE", 'woocommerce-products-filter'); ?>" /></a>
+                        <a href="https://codecanyon.pluginus.net/item/woobe-woocommerce-bulk-editor-professional/21779835" target="_blank"><img src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/bear.png" alt="<?php esc_html_e("WOOBE", 'woocommerce-products-filter'); ?>" /></a>
                     </td>
 
                     <td>
                         <h3><?php esc_html_e("WooCommerce Currency Swither", 'woocommerce-products-filter') ?>:</h3>
-                        <a href="https://pluginus.net/affiliate/woocommerce-currency-switcher" target="_blank"><img src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/woocs.png" alt="<?php esc_html_e("WOOCS", 'woocommerce-products-filter'); ?>" /></a>
+                        <a href="https://codecanyon.pluginus.net/item/woocommerce-currency-switcher/8085217" target="_blank"><img src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/woocs.png" alt="<?php esc_html_e("WOOCS", 'woocommerce-products-filter'); ?>" /></a>
                     </td>
 
                     <td>

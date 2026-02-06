@@ -240,38 +240,53 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
     }
 
     public function woof_add_subscr() {
-		
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_product_messenger_nonce'), 'product_messenger_nonce')) {
-			return false;
-		}		
         global $WOOF, $wpdb, $wp_query;
 
-        if (!isset($_POST['link']) OR !isset($_POST['user_id'])) {
-            die();
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_product_messenger_nonce'), 'product_messenger_nonce')) {
+            return false;
+        }
+
+        if (!isset($_POST['link'])) {
+            die('Bye');
+        }
+
+        $link = esc_url_raw($_POST['link']);
+
+        if (empty($link)) {
+            wp_die('Invalid link', 403);
+        }
+
+        // CRITICAL: check that the link is inside the site!
+        $parsed_link = parse_url($link);
+        $parsed_home = parse_url(home_url());
+
+        // Allow only relative links or links to the current domain
+        if (isset($parsed_link['host']) && $parsed_link['host'] !== $parsed_home['host']) {
+            wp_die('Invalid link domain', 403);
+        }
+
+        $user_id = get_current_user_id();
+        //check for real user match
+        if ($user_id < 1) {
+            wp_die('Unauthorized', 403);
         }
 
         //***
 
-        $data = array();
-        $sanit_user_id = sanitize_key($_POST['user_id']);
-        if ($sanit_user_id < 1) {
-            die(); //if user id - wrong!!!
-        }
+        $data = [];
 
-        $key = uniqid('woofms_'); // Create   key for this subscr
+        $key = uniqid('woofms_'); // Create key for this subscr
         $data['key'] = $key;
-
         $data['secret_key'] = bin2hex(random_bytes(9)); //Key for check link from email
-
-        $data['user_id'] = $sanit_user_id;
-        $data['link'] = sanitize_text_field($_POST['link']);
+        $data['user_id'] = $user_id;
+        $data['link'] = $link;
         $data['get'] = $this->woof_get_html_terms($this->sanitaz_array_r(isset($_POST['get_var']) ? $_POST['get_var'] : array()));
 
         $subscr = get_user_meta($data['user_id'], $this->user_meta_key, true);
         $data['request'] = $this->sanitazed_sql_query(base64_decode(woof()->storage->get_val("woof_pm_request_" . $data['user_id'])));
         // If the request has banned operators or is empty
         if (!$data['request'] OR empty($data['request'])) {
-            die();
+            wp_die('Invalid request', 403);
         }
         //+++
         //Remove limit frim request
@@ -308,24 +323,25 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
         $data['ext_link'] = $this->get_ext_link();
         //for Ajax redraw
         $cont = woof()->render_html($this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'item_list_subscr.php', $data);
-		wp_send_json($cont);
+        wp_send_json($cont);
         //die($cont);
     }
 
     public function woof_remove_subscr() {
-		
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_product_messenger_nonce'), 'product_messenger_nonce')) {
-			return false;
-		}		
-        if (!isset($_POST['key']) OR !isset($_POST['user_id'])) {
+
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_product_messenger_nonce'), 'product_messenger_nonce')) {
+            return false;
+        }
+        if (!isset($_POST['key'])) {
             die('No data!');
         }
-		
-		if (get_current_user_id() == 0  ||  get_current_user_id() != (int) $_POST['user_id']) {
-			return false;
-		}
-		
-        $user_id = sanitize_key($_POST['user_id']);
+
+        $user_id = get_current_user_id();
+
+        if ($user_id < 1) {
+            wp_die('Unauthorized', 403);
+        }
+
         $key = sanitize_key($_POST['key']);
         $subscr = get_user_meta($user_id, $this->user_meta_key, true);
         unset($subscr[$key]);
@@ -485,7 +501,6 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
         }
         return $sql;
     }
-
 }
 
 WOOF_EXT::$includes['html_type_objects']['products_messenger'] = new WOOF_EXT_PRODS_MESSENGER();
