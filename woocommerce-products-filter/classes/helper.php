@@ -56,7 +56,7 @@ final class WOOF_HELPER {
         $is_textarea = array('init_only_on', 'custom_css_code', 'js_after_ajax_done');
         $is_js = array();
 
-        $potential_html = array_intersect_key(woof()->settings, array_flip(['result_count_redraw', 'order_dropdown_redraw', 'per_page_redraw']));
+        $potential_html = array_intersect_key(woof()->settings ?? [], array_flip(['result_count_redraw', 'order_dropdown_redraw', 'per_page_redraw']));
         $is_html = array_merge($is_html, array_filter(array_values($potential_html)));
 
         if (is_array($array) && !empty($array)) {
@@ -735,7 +735,7 @@ final class WOOF_HELPER {
             }
         }
 
-        return ceil($max_price);
+        return apply_filters('woof_get_max_price', ceil($max_price), $additional_taxes);
     }
 
     //https://pluginus.net/support/topic/price-filter-not-working-correctly-3/
@@ -858,7 +858,7 @@ final class WOOF_HELPER {
         }
 
 
-        return $min;
+        return apply_filters('woof_get_min_price', $min, $additional_taxes);
     }
 
     //https://pluginus.net/support/topic/price-filter-not-working-correctly-3/
