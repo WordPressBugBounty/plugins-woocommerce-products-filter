@@ -14,7 +14,7 @@ if (!defined('ABSPATH'))
         }
         ?></span>
     <div class="woof-slide-content woof-slide-<?php echo esc_attr($key) ?>">
-        <?php echo do_shortcode(esc_attr($content)) ?>
+        <?php echo do_shortcode(wp_kses_post($content)) ?>
     </div>
 </div>
 

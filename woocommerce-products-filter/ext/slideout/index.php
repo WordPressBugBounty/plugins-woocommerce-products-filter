@@ -57,7 +57,7 @@ final class WOOF_SLIDEOUT extends WOOF_EXT {
 
         if (isset($this->woof_settings['woof_slideout_show']) AND $this->woof_settings['woof_slideout_show'] AND is_woocommerce()) {
             $this->woof_settings['woof_slideout_class'] = 'woof_slideout_default';
-            if (!isset($this->woof_settings['woof_slideout_width']) OR!$this->woof_settings['woof_slideout_width']) {
+            if (!isset($this->woof_settings['woof_slideout_width']) OR !$this->woof_settings['woof_slideout_width']) {
                 $this->woof_settings['woof_slideout_width'] = "350";
                 $this->woof_settings['woof_slideout_width_t'] = "px";
             }
@@ -112,7 +112,7 @@ final class WOOF_SLIDEOUT extends WOOF_EXT {
 
     public function woof_print_applications_tabs_content() {
 //***
-        
+
         $data = array();
 
         $data['woof_settings'] = $this->woof_settings;
@@ -127,21 +127,21 @@ final class WOOF_SLIDEOUT extends WOOF_EXT {
         if (isset($this->woof_settings['woof_slideout_img']) AND $this->woof_settings['woof_slideout_img']) {
             $image = $this->woof_settings['woof_slideout_img'];
         }
-		$offset =  '100px';
-		if (isset($this->woof_settings['woof_slideout_offset_t']) &&  isset($this->woof_settings['woof_slideout_offset'])) {
-			$offset = $this->woof_settings['woof_slideout_offset'] . $this->woof_settings['woof_slideout_offset_t'];
-		}
-		
-		$width = 'auto';
-		if (isset($this->woof_settings['woof_slideout_width']) &&  isset($this->woof_settings['woof_slideout_width_t'])) {
-			$width = $this->woof_settings['woof_slideout_width'] . $this->woof_settings['woof_slideout_width_t'];
-		}		
-		
-		$height = 'auto';
-		if (isset($this->woof_settings['woof_slideout_height_t']) &&  isset($this->woof_settings['woof_slideout_height'])) {
-			$height = $this->woof_settings['woof_slideout_height'] . $this->woof_settings['woof_slideout_height_t'];
-		}		
-		
+        $offset = '100px';
+        if (isset($this->woof_settings['woof_slideout_offset_t']) && isset($this->woof_settings['woof_slideout_offset'])) {
+            $offset = $this->woof_settings['woof_slideout_offset'] . $this->woof_settings['woof_slideout_offset_t'];
+        }
+
+        $width = 'auto';
+        if (isset($this->woof_settings['woof_slideout_width']) && isset($this->woof_settings['woof_slideout_width_t'])) {
+            $width = $this->woof_settings['woof_slideout_width'] . $this->woof_settings['woof_slideout_width_t'];
+        }
+
+        $height = 'auto';
+        if (isset($this->woof_settings['woof_slideout_height_t']) && isset($this->woof_settings['woof_slideout_height'])) {
+            $height = $this->woof_settings['woof_slideout_height'] . $this->woof_settings['woof_slideout_height_t'];
+        }
+
         $atts = shortcode_atts(array(
             'image' => $image,
             'image_h' => (isset($this->woof_settings['woof_slideout_img_h'])) ? $this->woof_settings['woof_slideout_img_h'] : 50,
@@ -155,18 +155,30 @@ final class WOOF_SLIDEOUT extends WOOF_EXT {
             'width' => $width,
             'height' => $height,
             'text' => (isset($this->woof_settings['woof_slideout_txt'])) ? $this->woof_settings['woof_slideout_txt'] : esc_html__('Filter', 'woocommerce-products-filter'),
-            'class' => ""
+            'class' => "",
+            'redirect' => ""
                 ), $atts);
 
         if (!empty($content)) {
             $atts['content'] = $content;
         } else {
-            $atts['content'] = "[woof]";
+            // Build [woof] shortcode from any extra atts not belonging to slideout
+            $slideout_own_atts = ['image', 'image_h', 'image_w', 'action', 'location',
+                'speed', 'offset', 'onloadslideout', 'mobile_behavior',
+                'width', 'height', 'text', 'class'];
+            $woof_atts_parts = [];
+            foreach ($atts as $key => $val) {
+                if (!in_array($key, $slideout_own_atts) && $val !== '') {
+                    $woof_atts_parts[] = $key . '="' . esc_attr($val) . '"';
+                }
+            }
+            $woof_atts_str = !empty($woof_atts_parts) ? ' ' . implode(' ', $woof_atts_parts) : '';
+            $atts['content'] = "[woof{$woof_atts_str}]";
         }
 
-        
+
         $show = true;
-        if (intval($atts['mobile_behavior']) === 1 AND!wp_is_mobile()) {
+        if (intval($atts['mobile_behavior']) === 1 AND !wp_is_mobile()) {
             $show = false;
         }
         if (intval($atts['mobile_behavior']) === 2 AND wp_is_mobile()) {
@@ -218,25 +230,25 @@ final class WOOF_SLIDEOUT extends WOOF_EXT {
         }
 
         foreach ($deff_attr as $key => $data) {
-            if (isset($attr[$key]) AND!empty($attr[$key])) {
+            if (isset($attr[$key]) AND !empty($attr[$key])) {
                 $deff_attr[$key] .= $attr[$key];
                 if ($key == "woof_slideout_offset") {
                     $type = "px";
-                    if (isset($attr[$key . "_t"]) AND!empty($attr[$key] . "_t")) {
+                    if (isset($attr[$key . "_t"]) AND !empty($attr[$key] . "_t")) {
                         $type = $attr[$key . "_t"];
                     }
                     $deff_attr[$key] .= $type;
                 }
                 if ($key == "woof_slideout_width") {
                     $type = "px";
-                    if (isset($attr[$key . "_t"]) AND!empty($attr[$key] . "_t")) {
+                    if (isset($attr[$key . "_t"]) AND !empty($attr[$key] . "_t")) {
                         $type = $attr[$key . "_t"];
                     }
                     $deff_attr[$key] .= $type;
                 }
                 if ($key == "woof_slideout_height") {
                     $type = "px";
-                    if (isset($attr[$key . "_t"]) AND!empty($attr[$key] . "_t")) {
+                    if (isset($attr[$key . "_t"]) AND !empty($attr[$key] . "_t")) {
                         $type = $attr[$key . "_t"];
                     }
                     $deff_attr[$key] .= $type;
@@ -250,18 +262,17 @@ final class WOOF_SLIDEOUT extends WOOF_EXT {
     }
 
     public function generate_shortcode_ajax() {
-		if (!wp_verify_nonce(WOOF_REQUEST::get('woof_slideout_nonce'), 'slideout_nonce')) {
-			return false;
-		}		
-		
-		if (!current_user_can('manage_woocommerce') ) {
-            return;
-        }		
-        $shortcode = $this->generate_shortcode(wc_clean($_POST));
-		wp_send_json($shortcode);
-       // die($shortcode);
-    }
+        if (!wp_verify_nonce(WOOF_REQUEST::get('woof_slideout_nonce'), 'slideout_nonce')) {
+            return false;
+        }
 
+        if (!current_user_can('manage_woocommerce')) {
+            return;
+        }
+        $shortcode = $this->generate_shortcode(wc_clean($_POST));
+        wp_send_json($shortcode);
+        // die($shortcode);
+    }
 }
 
 WOOF_EXT::$includes['applications']['slideout'] = new WOOF_SLIDEOUT();

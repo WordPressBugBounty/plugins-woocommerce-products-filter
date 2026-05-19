@@ -2471,10 +2471,17 @@
                         </div>
 
                         <ul class="woof__features-gallery woof__col-6">
-                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter"><img class="woof-rounded" width="300" src="<?php echo esc_url(WOOF_LINK) ?>/img/plugin_options/banners/woof.png"></a></li>
-                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woobe-woocommerce-bulk-editor-professional/21779835"><img class="woof-rounded" width="300" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/bear.png"></a></li>
-                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580"><img class="woof-rounded" width="300" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/woot.png"></a></li>
-                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/wordpress-posts-bulk-editor-professional/24376112" title="WPBE - WordPress Posts Bulk Editor Professional"><img class="woof-rounded" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/wpbe.png" alt="WPBE - WordPress Posts Bulk Editor Professional" width="300"></a></li>
+                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter"><img class="woof-rounded" width="250" src="<?php echo esc_url(WOOF_LINK) ?>/img/plugin_options/banners/woof.png"></a></li>
+                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woobe-woocommerce-bulk-editor-professional/21779835"><img class="woof-rounded" width="250" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/bear.png"></a></li>
+                            <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580"><img class="woof-rounded" width="250" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/woot.png"></a></li>
+
+                            <li>
+                                <a href="https://wordpress.org/plugins/botoscope/" title="BOTOSCOPE - Bridge your WooCommerce store and Telegram" target="_blank">
+                                    <img width="280" src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/botoscope.png" alt="BOTOSCOPE - Bridge your WooCommerce store and Telegram">
+                                </a>
+                            </li>
+
+
                         </ul>
 
                     </div>
@@ -3072,10 +3079,11 @@
                     </td>
 
                     <td>
-                        <h3><?php esc_html_e("WooCommerce Products Tables", 'woocommerce-products-filter') ?>:</h3>
-                        <a href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580" target="_blank"><img src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/woot.png" alt="<?php esc_html_e("WOOT", 'woocommerce-products-filter'); ?>" /></a>
+                        <h3>Botoscope:</h3>
+                        <a href="https://wordpress.org/plugins/botoscope/" target="_blank" title="BOTOSCOPE - Bridge your WooCommerce store and Telegram"><img src="<?php echo esc_url(WOOF_LINK) ?>img/plugin_options/banners/botoscope.png" style="width: 800px;" alt="BOTOSCOPE - Bridge your WooCommerce store and Telegram" /></a>
                     </td>
-
+                    
+                    
                 </tr>
             </tbody>
         </table>

@@ -495,7 +495,7 @@ function woof_step_filter_submit(){
                 return false;
             }
             //turbo
-        })
+        });
         
         jQuery('.woof_submit_search_form_container').show();
         jQuery('.woof_step .woof .woof_submit_search_form').show();
