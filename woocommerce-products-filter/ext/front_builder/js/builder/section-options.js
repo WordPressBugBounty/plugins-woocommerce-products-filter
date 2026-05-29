@@ -44,7 +44,7 @@ export default class SectionOptions {
                     styles.innerHTML = rules_txt;
                 }
 
-                //!!important because css is in tag <style>
+                //!!important because css is in tag style
                 if (styles.sheet.cssRules.length > 0) {
                     Array.from(styles.sheet.cssRules).forEach((rule, index) => {
                         if (rule.selectorText.indexOf(this.section_key) !== -1) {

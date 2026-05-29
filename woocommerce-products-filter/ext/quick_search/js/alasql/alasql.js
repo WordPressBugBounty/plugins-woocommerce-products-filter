@@ -3552,15 +3552,7 @@ var loadFile = (utils.loadFile = function(path, asy, success, error) {
 				xhr.send();
 			}
 		} else if (path instanceof Event) {
-			/*
-                For browser read from files input element
-                <input type="files" onchange="readFile(event)">
-                <script>
-                    function readFile(event) {
-                        alasql('SELECT * FROM TXT(?)',[event])
-                    }
-                </script>
-            */
+			
 			/** @type {array} List of files from <input> element */
 			var files = path.target.files;
 			/** type {object} */

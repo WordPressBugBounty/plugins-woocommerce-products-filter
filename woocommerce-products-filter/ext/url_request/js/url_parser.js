@@ -1,10 +1,10 @@
 "use strict";
 
 function woof_get_submit_link() {
-    
-	//delete  seo text
-	jQuery('.woof_seo_text').remove();    
-    
+
+    //delete  seo text
+    jQuery('.woof_seo_text').remove();
+
 //filter woof_current_values values
     if (woof_is_ajax) {
         woof_current_values.page = woof_ajax_page_num;
@@ -41,19 +41,23 @@ function woof_get_submit_link() {
     let hash = window.location.hash;
     let vars = window.location.search;
     let url = woof_current_page_link.replace(new RegExp(/page\/(\d+)\//), "");
-    
+
     //remove pagination
     let all_vars = new URLSearchParams(vars);
     if (all_vars.has('product-page')) {
         all_vars.delete('product-page');
-	vars = "?" + all_vars;	
+        vars = "?" + all_vars;
+    }
+
+    if (!url) {
+        url = window.location.href;//fix when user changed form and want to test
     }
 
     let url_obj = new URL(url);
     url = url_obj.origin + url_obj.pathname
 
-    let url_params = new URLSearchParams(url_obj.search );
-    
+    let url_params = new URLSearchParams(url_obj.search);
+
     let tmp_url = url.split('/' + swoof_search_slug + '/');
     let new_url = tmp_url[0];
     var link = "";
@@ -68,7 +72,7 @@ function woof_get_submit_link() {
         obj[key] = woof_current_values[key];
         return obj;
     }, {});
-    
+
     for (let j in ordered_data) {
         if (typeof url_parser_data.special[j] != 'undefined') {
             url_array.push(url_parser_data.special[j]);
@@ -93,31 +97,31 @@ function woof_get_submit_link() {
     }
 
     if (url_params.size) {
-	let search_url_params = new URLSearchParams(vars);
+        let search_url_params = new URLSearchParams(vars);
 
-	let result_url_params = new URLSearchParams({
-	    ...Object.fromEntries(search_url_params),
-	    ...Object.fromEntries(url_params)
-	  });
-	vars = "?" + result_url_params;	
+        let result_url_params = new URLSearchParams({
+            ...Object.fromEntries(search_url_params),
+            ...Object.fromEntries(url_params)
+        });
+        vars = "?" + result_url_params;
     }
-    if(typeof woof_current_values['orderby'] != 'undefined'){
-	let searchParams = new URLSearchParams(vars);
+    if (typeof woof_current_values['orderby'] != 'undefined') {
+        let searchParams = new URLSearchParams(vars);
 
-	if (searchParams.has('orderby')) {
-	    searchParams.delete('orderby');
-	}
-	searchParams.append("orderby", woof_current_values['orderby']);
-	vars = "?" + searchParams.toString();	
+        if (searchParams.has('orderby')) {
+            searchParams.delete('orderby');
+        }
+        searchParams.append("orderby", woof_current_values['orderby']);
+        vars = "?" + searchParams.toString();
     }
 
-    
+
     link = new_url + search_request_url + vars + hash
     link = link.replace(new RegExp(/page\/(\d+)\//), "");
     if (woof_is_ajax) {
 
         if (typeof woof_current_values.page != 'undefined' && woof_current_values.page > 1) {
-            link = new_url + search_request_url +  'page/' + woof_current_values.page + '/' + vars + hash
+            link = new_url + search_request_url + 'page/' + woof_current_values.page + '/' + vars + hash
         }
 
         history.pushState({}, "", link);

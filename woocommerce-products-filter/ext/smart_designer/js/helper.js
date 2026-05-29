@@ -6,15 +6,24 @@ export default class Helper {
     }
 
     static ajax(action, data, callback = null, json = true, custom_ajaxurl = null, signal = null) {
-        fetch(custom_ajaxurl ? custom_ajaxurl : ajaxurl, {
+        const isStaticFile = custom_ajaxurl && custom_ajaxurl.match(/\.(html|htm|txt)$/i);
+
+        const fetchOptions = {
             signal: signal,
-            method: 'POST',
+            method: isStaticFile ? 'GET' : 'POST',
             credentials: 'same-origin',
-            body: Helper.prepare_ajax_form_data({...{action}, ...data})
-        }).then(response => json ? response.json() : response.text()).then(data => {
-            callback ? callback(data) : null;
-            callback2(action, data)
-        });
+        };
+
+        if (!isStaticFile) {
+            fetchOptions.body = Helper.prepare_ajax_form_data({...{action}, ...data});
+        }
+
+        fetch(custom_ajaxurl ? custom_ajaxurl : ajaxurl, fetchOptions)
+                .then(response => json ? response.json() : response.text())
+                .then(data => {
+                    callback ? callback(data) : null;
+                    callback2(action, data);
+                });
 
         function callback2(action, data) {
             window.parent.postMessage({

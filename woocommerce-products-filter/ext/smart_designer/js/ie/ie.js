@@ -12,9 +12,9 @@ export default class IE {
     draw() {
         this.container.innerHTML = '';
 
-        this.template_url = woof_sd.url + `templates/${this.visor.selected_type}.php`;
+        this.template_url = woof_sd.url + `templates/${this.visor.selected_type}.html`;
         if (this.template_num > 0) {
-            this.template_url = woof_sd.url + `templates/${this.visor.selected_type}-${this.template_num}.php`;
+            this.template_url = woof_sd.url + `templates/${this.visor.selected_type}-${this.template_num}.html`;
         }
 
         //for outer elements

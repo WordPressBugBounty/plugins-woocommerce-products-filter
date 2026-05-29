@@ -1,4 +1,6 @@
 "use strict";
-jQuery(document).ready(function() {
-    //todo
-});    
+jQuery( document ).ready(
+	function () {
+		// todo
+	}
+);

@@ -1059,7 +1059,8 @@ function woof_qt_init_radio() {
     jQuery('.woof_qt_radio_reset').on('click', function () {
         var slug = jQuery(this).attr('data-tax');
         jQuery(this).parents('.woof_qt_item_container').find('.checked').removeClass('checked');
-        jQuery(this).parents('.woof_qt_item_container').find('input[type=radio]').removeAttr('checked');
+        jQuery(this).parents('.woof_qt_item_container').find('input[type=radio]').attr("checked", false);
+        //jQuery(this).parents('.woof_qt_item_container').find('input[type=radio]').iCheck('uncheck');
         woof_qt_current_values.add_filter[slug] = [];
         woof_qt_curr_page = 0;/*reset pagination*/
         woof_quick_search_draw();

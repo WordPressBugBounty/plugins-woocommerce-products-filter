@@ -46,7 +46,7 @@
 @media (-o-min-device-pixel-ratio: 5/4), (-webkit-min-device-pixel-ratio: 1.25), (min-resolution: 120dpi), (min-resolution: 1.25dppx) {
     .icheckbox_futurico,
     .iradio_futurico {
-        background-image: url(futurico@2x.png);
+        background-image: url(futurico_2x.png);
         -webkit-background-size: 144px 19px;
         background-size: 144px 19px;
     }
