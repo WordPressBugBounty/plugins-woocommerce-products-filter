@@ -10,7 +10,7 @@ if ( $dynamic_recount == -1 ) {
 } else {
 	$args['show_count_dynamic'] = $dynamic_recount;
 }
-$args['hide_dynamic_empty_pos'] = ( intval( WOOF_VERSION ) === 1 ) ? 0 : get_option( 'woof_hide_dynamic_empty_pos', 0 );
+$args['hide_dynamic_empty_pos'] = 0;
 $args['woof_autosubmit']        = $autosubmit;
 // ***
 
@@ -39,9 +39,8 @@ if ( ! function_exists( 'woof_show_btn' ) ) {
 		if ( $is_searh_active or woof()->is_isset_in_request_data( 'min_price' ) or ( class_exists( 'WOOF_EXT_TURBO_MODE' ) and isset( woof()->settings['woof_turbo_mode']['enable'] ) and woof()->settings['woof_turbo_mode']['enable'] ) ) :
 			global $woof_link;
 			$woof_reset_btn_txt = get_option( 'woof_reset_btn_txt', '' );
-			if ( empty( $woof_reset_btn_txt ) or woof()->show_notes ) {
 				$woof_reset_btn_txt = esc_html__( 'Reset', 'woocommerce-products-filter' );
-			}
+			
 			$woof_reset_btn_txt = WOOF_HELPER::wpml_translate( null, $woof_reset_btn_txt );
 			?>
 				<?php if ( $woof_reset_btn_txt != 'none' ) : ?>
@@ -49,9 +48,8 @@ if ( ! function_exists( 'woof_show_btn' ) ) {
 				<?php endif; ?><?php endif; ?><?php if ( ! $autosubmit or $ajax_redraw ) : ?>
 					<?php
 					$woof_filter_btn_txt = get_option( 'woof_filter_btn_txt', '' );
-					if ( empty( $woof_filter_btn_txt ) or woof()->show_notes ) {
 						$woof_filter_btn_txt = esc_html__( 'Filter', 'woocommerce-products-filter' );
-					}
+					
 
 					$woof_filter_btn_txt = WOOF_HELPER::wpml_translate( null, $woof_filter_btn_txt );
 					?>

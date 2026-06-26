@@ -37,8 +37,8 @@ export default class Panel {
                             lock = true;
 
                             if (woof_show_notes && this.sd.table.rows.length >= 1) {
-                                if (confirm('Hi! In the free version of HUSKY you can operate with 1 element! If you want to create more elements you can make upgrade to the premium version of the plugin. Would you like to visit the plugin page on Codecanyon?')) {
-                                    window.location.href = 'https://products-filter.com/a/buy';
+                                if (confirm(woof_lang_want_to_download_page)) {
+                                    window.location.href = 'https://products-filter.com/downloads';
                                 }
 
                                 lock = false;

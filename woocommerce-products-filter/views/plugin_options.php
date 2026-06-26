@@ -1298,9 +1298,8 @@ WP_Filesystem();
 										<div class="woof-control">
 
 											<?php
-											if ( ! isset( $woof_settings['override_no_products'] ) or $this->show_notes ) {
 												$woof_settings['override_no_products'] = '';
-											}
+											
 											?>
 
 											<textarea name="woof_settings[override_no_products]" id="override_no_products" ><?php echo wp_kses_post( wp_unslash( $woof_settings['override_no_products'] ) ); ?></textarea>
@@ -1381,15 +1380,13 @@ WP_Filesystem();
 												1 => esc_html__( 'Yes', 'woocommerce-products-filter' ),
 											);
 
-											if ( $this->show_notes ) {
 												unset( $hide_terms_count_txt[1] );
-											}
+											
 											?>
 
 											<?php
-											if ( ! isset( $woof_settings['hide_terms_count_txt'] ) or empty( $woof_settings['hide_terms_count_txt'] ) or $this->show_notes ) {
 												$woof_settings['hide_terms_count_txt'] = 0;
-											}
+											
 											?>
 
 											<select name="woof_settings[hide_terms_count_txt]">

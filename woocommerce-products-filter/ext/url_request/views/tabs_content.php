@@ -193,9 +193,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 											$seo_rules = $woof_settings['woof_url_request']['seo_rules'][ $lang ];
 										}
 
-										if ( intval( WOOF_VERSION ) === 1 ) {
+					
 											$seo_rules = array_slice( $seo_rules, 0, 2 );
-										}
+										
 
 										foreach ( $seo_rules as $key => $data ) {
 											$seo_rule->woof_draw_seo_rules_item( $key, $lang, $data['url'], $data['title'], $data['description'], $data['h1'], ( isset( $data['text'] ) ? $data['text'] : '' ) );

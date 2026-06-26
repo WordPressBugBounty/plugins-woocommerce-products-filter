@@ -74,11 +74,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 									continue;
 								}
 
-								if ( intval( WOOF_VERSION ) === 1 ) {
-									if ( $counter++ >= 2 ) {
-										break;
-									}
+								if ( $counter++ >= 2 ) {
+									break;
 								}
+								
 
 								woof_meta_print_li( $m, $meta_types );
 							}

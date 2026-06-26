@@ -7,14 +7,14 @@
 	Tested up to: 7.0
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.3.9
+	Version: 1.4.0
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
 	Domain Path: /languages
 	Forum URI: https://pluginus.net/support/forum/woof-woocommerce-products-filter/
 	WC requires at least: 6.0
-	WC tested up to: 10.8
+	WC tested up to: 10.9
 	Requires Plugins: woocommerce
 	License: GPL-2.0-or-later
 	License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -33,6 +33,23 @@ add_action(
 		}
 	}
 );
+
+// Optional Freemius integration: load only if the bootstrap file is present.
+// For marketplace builds (woo.com, Envato) just delete /freemius and freemius.php — this is skipped.
+$husky_fs_bootstrap = dirname( __FILE__ ) . '/freemius.php';
+if ( file_exists( $husky_fs_bootstrap ) ) {
+    require_once $husky_fs_bootstrap;
+}
+
+// Register uninstall cleanup via a hook (replaces uninstall.php).
+register_uninstall_hook( __FILE__, 'woof_uninstall_cleanup' );
+
+function woof_uninstall_cleanup() {
+    global $wpdb;
+    // Drop the plugin's query cache table on uninstall.
+    $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}woof_query_cache" );
+}
+
 
 if ( class_exists( 'WOOF' ) ) {
     return;
@@ -86,7 +103,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.3.9' );
+define( 'WOOF_VERSION', '1.4.0' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -104,7 +121,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 29-05-2026
+// 24-06-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -423,6 +440,7 @@ final class HUSKY {
 		?>
 		var woof_save_link = "<?php echo esc_url( admin_url( 'admin.php' ) ) . '?page=wc-settings&tab=woof&settings_saved=1'; ?>";
 		var woof_lang_saving = "<?php esc_html_e( 'HUSKY settings saving ...', 'woocommerce-products-filter' ); ?>";
+		var woof_lang_want_to_download_page = "<?php esc_html_e( 'Hi! In the free version of HUSKY you can operate with 1 element! If you want to create more elements you can make upgrade to the premium version of the plugin. Would you like to visit the plugin page?', 'woocommerce-products-filter' ); ?>";
 		var woof_abspath = "<?php echo esc_html( realpath( ABSPATH ) ); ?>";
 		var woof_ext_path = "<?php echo esc_html( realpath( $this->get_custom_ext_path() ) ) . '/'; ?>";
 		var woof_show_notes = <?php echo intval( $this->show_notes ? 1 : 0 ); ?>;
@@ -661,21 +679,15 @@ final class HUSKY {
 			'<a target="_blank" href="https://products-filter.com/documentation">' . esc_html__( 'Documentation', 'woocommerce-products-filter' ) . '</a>',
 		);
 
-		if ( $this->show_notes ) {
+	
 			$buttons[] = '<a target="_blank" style="color: red; font-weight: bold;" href="https://products-filter.com/downloads">' . esc_html__( 'Go Pro!', 'woocommerce-products-filter' ) . '</a>';
-		}
+		
 
 		return array_merge( $buttons, $links );
 	}
 
 	public function get_swoof_search_slug_opt() {
 		$slug = 'swoof';
-
-		if ( ! $this->show_notes ) {
-			if ( isset( $this->settings['swoof_search_slug'] ) and ! empty( $this->settings['swoof_search_slug'] ) ) {
-				$slug = $this->settings['swoof_search_slug'];
-			}
-		}
 
 		return $slug;
 	}

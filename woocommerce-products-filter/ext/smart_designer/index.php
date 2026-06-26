@@ -523,11 +523,10 @@ final class WOOF_SD extends WOOF_EXT {
 		$sql      = $this->db->prepare( 'SELECT * FROM %i ORDER BY title asc', $this->table );
 		$elements = $this->db->get_results( $sql, ARRAY_A );
 
-		if ( function_exists( 'woof' ) && woof() && woof()->show_notes ) {
-			if ( ! empty( $elements ) ) {
-				$elements = array( $elements[0] );
-			}
+		if ( ! empty( $elements ) ) {
+			$elements = array( $elements[0] );
 		}
+		
 
 		return $elements;
 	}

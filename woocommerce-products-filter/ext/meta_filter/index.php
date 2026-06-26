@@ -94,10 +94,8 @@ final class WOOF_META_FILTER extends WOOF_EXT {
 					continue;
 				}
 
-				if ( intval( WOOF_VERSION ) === 1 ) {
-					if ( $counter++ >= 2 ) {
+				if ( $counter++ >= 2 ) {
 						break;
-					}
 				}
 
 				$this->meta_keys[] = $val['meta_key'];

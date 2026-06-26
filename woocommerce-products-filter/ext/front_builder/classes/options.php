@@ -92,7 +92,7 @@ final class WOOF_FRONT_BUILDER_OPTIONS {
 				if ( array_key_exists( $option['field'], $options_data ) ) {
 					$options[ $k ]['value'] = array_key_exists( $option['field'], $options_data ) ? $options_data[ $option['field'] ] : $options['value'];
 					$options[ $k ]['value'] = apply_filters( 'woof_front_builder_option', $options[ $k ]['value'], $option['field'] );
-					if ( woof()->show_notes && isset( $options[ $k ]['is_not_free'] ) ) {
+					if (isset( $options[ $k ]['is_not_free'] ) ) {
 						$options[ $k ]['description'] .= '. <span class="woof-front-builder-premium">' . esc_html__( 'Not has effect in free version!', 'woocommerce-products-filter' ) . '</span>';
 					}
 				}

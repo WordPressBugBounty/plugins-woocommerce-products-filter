@@ -99,7 +99,7 @@ export default class List {
                 li.dataset.viewtype = key;
             }
 
-            if (woof_front_sd_is_a && woof_front_show_notes) {
+            if (woof_front_sd_is_a) {
                 if (key.indexOf('woof_sd_') !== -1) {
                     this.list_has_sd = true;
                 }
@@ -225,11 +225,11 @@ export default class List {
                             } else {
                                 if (confirm(woof_lang_front_builder_confirm_sd)) {
 
-                                    if (woof_front_sd_is_a && woof_front_show_notes) {
+                                    if (woof_front_sd_is_a) {
                                         if (this.list_has_sd) {
 
-                                            if (confirm('Hi! In the free version of HUSKY you can operate with 1 element! If you want to create more elements you can make upgrade to the premium version of the plugin. Would you like to visit the plugin page on Codecanyon?')) {
-                                                window.location.href = 'https://products-filter.com/a/buy';
+                                            if (confirm(woof_lang_want_to_download_page)) {
+                                                window.location.href = 'https://products-filter.com/downloads';
                                             }
 
                                             return false;
@@ -342,7 +342,7 @@ export default class List {
 
     //to avoid confusing lets hide SD buttons if one is selected or SD created
     check_sd_buttons() {
-        if (woof_front_sd_is_a && woof_front_show_notes) {
+        if (woof_front_sd_is_a) {
             let images = this.list.querySelectorAll('.woof-front-builder-sd-btn img');
             let hide = false;
 

@@ -51,10 +51,10 @@ class WOOF_RATE_ALERT {
 					<hr />
 
 					<?php
-					$link = 'https://codecanyon.net/downloads#item-11498469';
-					if ( $this->notes_for_free ) {
+					//$link = 'https://codecanyon.net/downloads#item-11498469';
+					//if ( $this->notes_for_free ) {
 						$link = 'https://wordpress.org/support/plugin/woocommerce-products-filter/reviews/#new-post';
-					}
+					//}
 					?>
 
 					<table style="width: 100%; margin-bottom: 7px;">

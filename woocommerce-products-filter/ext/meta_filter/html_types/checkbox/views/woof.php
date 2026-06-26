@@ -19,7 +19,7 @@ if ( isset( woof()->settings[ $meta_key ] ) and woof()->settings[ $meta_key ]['s
 	$count                  = 0;
 	$show_count             = get_option( 'woof_show_count', 0 );
 	$show_count_dynamic     = get_option( 'woof_show_count_dynamic', 0 );
-	$hide_dynamic_empty_pos = ( intval( WOOF_VERSION ) === 1 ) ? 0 : get_option( 'woof_hide_dynamic_empty_pos', 0 );
+	$hide_dynamic_empty_pos = 0;
 	$show                   = true;
 	$disable                = '';
 	$additional_tax         = ( WOOF_REQUEST::isset( 'additional_taxes' ) ) ? WOOF_REQUEST::get( 'additional_taxes' ) : '';

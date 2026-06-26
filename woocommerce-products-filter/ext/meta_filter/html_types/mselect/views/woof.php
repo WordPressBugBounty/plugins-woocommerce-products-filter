@@ -93,7 +93,7 @@ if ( WOOF_REQUEST::isset( 'hide_terms_count_txt_short' ) and intval( WOOF_REQUES
 							$count                  = 0;
 							$show_count             = get_option( 'woof_show_count', 0 );
 							$show_count_dynamic     = get_option( 'woof_show_count_dynamic', 0 );
-							$hide_dynamic_empty_pos = ( intval( WOOF_VERSION ) === 1 ) ? 0 : get_option( 'woof_hide_dynamic_empty_pos', 0 );
+							$hide_dynamic_empty_pos = 0;
 
 							if ( ! in_array( $key + 1, $woof_value ) ) {
 								if ( $show_count ) {

@@ -38,9 +38,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<div class="woof-control-container">
 							<div class="woof-control">
 
-								<?php if ( woof()->show_notes ) : ?>
+						
 									<p class="woof_red"><?php esc_html_e( 'In FREE version it is possible to operate with 1 condition (first) only!', 'woocommerce-products-filter' ); ?></p>
-								<?php endif; ?>
+					
 
 								<textarea class="woof_fix9" name="woof_settings[woof_conditionals]"  data-name="woof_conditionals"><?php echo esc_textarea( $woof_settings['woof_conditionals'] ); ?></textarea>
 

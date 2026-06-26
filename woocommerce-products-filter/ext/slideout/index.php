@@ -140,6 +140,8 @@ final class WOOF_SLIDEOUT extends WOOF_EXT {
 		if ( isset( $this->woof_settings['woof_slideout_height_t'] ) && isset( $this->woof_settings['woof_slideout_height'] ) ) {
 			$height = $this->woof_settings['woof_slideout_height'] . $this->woof_settings['woof_slideout_height_t'];
 		}
+		
+		$raw_atts = (array) $atts;
 
 		$atts = shortcode_atts(
 			array(
@@ -181,7 +183,7 @@ final class WOOF_SLIDEOUT extends WOOF_EXT {
 				'class',
 			);
 			$woof_atts_parts   = array();
-			foreach ( $atts as $key => $val ) {
+			foreach ( $raw_atts as $key => $val ) {
 				if ( ! in_array( $key, $slideout_own_atts ) && $val !== '' ) {
 					$woof_atts_parts[] = $key . '="' . esc_attr( $val ) . '"';
 				}

@@ -63,9 +63,7 @@ class WoofFirstSettings {
 	public function get_ext_list_to_activate() {
 
 		$activate = array( 'label', 'in_stock', 'by_onsales', 'meta_filter', 'url_request', 'by_text', 'smart_designer', 'acf_filter', 'front_builder' );
-		if ( intval( WOOF_VERSION ) === 3 ) {
-			$activate = array_merge( $activate, array( 'color', 'image', 'select_hierarchy', 'slider', 'by_featured' ) );
-		}
+
 
 		return $activate;
 	}
@@ -128,27 +126,7 @@ class WoofFirstSettings {
 			),
 		);
 
-		if ( intval( WOOF_VERSION ) === 3 ) {
-			$settings['by_featured']          = array(
-				'show' => 1,
-			);
-			$settings['tax_type']['pa_color'] = 'color';
-
-			$settings['color'] = array(
-				'pa_color' => array(
-					'yellow' => '#eeee22',
-					'pink'   => '#ea31a6',
-					'purple' => '#cc2828',
-					'gray'   => '#d8d8d8',
-					'blue'   => '#1e73be',
-					'orange' => '#e87c35',
-					'green'  => '#81d742',
-					'black'  => '#000000',
-					'red'    => '#dd3333',
-					'white'  => '#ffffff',
-				),
-			);
-		}
+		
 
 		return $settings;
 	}

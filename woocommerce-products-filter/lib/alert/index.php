@@ -59,12 +59,12 @@ add_action(
 
 				wp_enqueue_script( 'woof_alert-js', WOOF_LINK . 'lib/alert/js/alert.js', array( 'jquery' ), WOOF_VERSION );
 
-				$link = 'https://codecanyon.net/downloads#item-11498469';
-				$on   = 'CodeCanyon';
-				if ( version_compare( WOOF_VERSION, '3.0.0', '<' ) ) {
+				//$link = 'https://codecanyon.net/downloads#item-11498469';
+				//$on   = 'CodeCanyon';
+				//if ( version_compare( WOOF_VERSION, '3.0.0', '<' ) ) {
 					$link = 'https://wordpress.org/support/plugin/woocommerce-products-filter/reviews/#new-post';
-					$on   = 'WordPress';
-				}
+					$on   = 'WordPress.org';
+				//}
 				?>
 			<div class="notice notice-info" id="pn_<?php echo esc_attr( $slug ); ?>_ask_favour" style="position: relative;">
 				<button onclick="javascript: return pn_<?php echo esc_attr( $slug ); ?>_dismiss_review(1); void(0);" title="<?php esc_html_e( 'Later', 'woocommerce-products-filter' ); ?>" class="notice-dismiss"></button>

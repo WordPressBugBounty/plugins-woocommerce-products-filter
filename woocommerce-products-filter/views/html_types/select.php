@@ -7,7 +7,7 @@ $collector = array();
 WOOF_REQUEST::set( 'additional_taxes', $additional_taxes );
 WOOF_REQUEST::set( 'hide_terms_count_txt', isset( $this->settings['hide_terms_count_txt'] ) ? $this->settings['hide_terms_count_txt'] : 0 );
 
-$woof_hide_dynamic_empty_pos = ( intval( WOOF_VERSION ) === 1 ) ? 0 : get_option( 'woof_hide_dynamic_empty_pos' );
+$woof_hide_dynamic_empty_pos = 0;
 // ***
 if ( WOOF_REQUEST::isset( 'hide_terms_count_txt_short' ) and intval( WOOF_REQUEST::get( 'hide_terms_count_txt_short' ) ) !== -1 ) {
 	if ( intval( WOOF_REQUEST::get( 'hide_terms_count_txt_short' ) ) === 1 ) {
@@ -29,7 +29,7 @@ if ( ! function_exists( 'woof_draw_select_childs' ) ) {
 		// ***
 
 		$request                     = woof()->get_request_data();
-		$woof_hide_dynamic_empty_pos = ( intval( WOOF_VERSION ) === 1 ) ? 0 : get_option( 'woof_hide_dynamic_empty_pos' );
+		$woof_hide_dynamic_empty_pos = 0;
 		// ***
 		$current_request = array();
 		if ( woof()->is_isset_in_request_data( woof()->check_slug( $tax_slug ) ) ) {
