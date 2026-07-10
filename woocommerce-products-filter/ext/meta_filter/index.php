@@ -107,8 +107,18 @@ final class WOOF_META_FILTER extends WOOF_EXT {
 	}
 
 	public function conect_activate_meta_filter( $key, $options ) {
-		$class_name = 'WOOF_META_FILTER_' . strtoupper( $options['search_view'] );
-		require_once $this->get_ext_path() . 'html_types/' . $options['search_view'] . '/index.php';// nosemgrep
+		// Validate the view slug before using it to build an include path.
+		$search_view = WOOF_HELPER::safe_view_slug( isset( $options['search_view'] ) ? $options['search_view'] : '' );
+		if ( '' === $search_view ) {
+			return;
+		}
+		$view_file = $this->get_ext_path() . 'html_types/' . $search_view . '/index.php';
+		if ( ! is_file( $view_file ) ) {
+			return;
+		}
+		$class_name = 'WOOF_META_FILTER_' . strtoupper( $search_view );
+		require_once $view_file;
+			
 		if ( class_exists( $class_name ) ) {
 			$this->meta_filters_obj[ $key ] = new $class_name( $key, $options, $this->woof_settings );
 			self::$includes['js_init_functions'][ 'meta_' . $options['search_view'] ] = $this->meta_filters_obj[ $key ]->get_js_func_name();
@@ -216,7 +226,12 @@ final class WOOF_META_FILTER extends WOOF_EXT {
 				$data             = array();
 				$data['key']      = $key;
 				$data['settings'] = $this->woof_settings;
-				woof()->render_html_e( $this->get_ext_path() . 'html_types/' . $this->woof_settings['meta_filter'][ $key ]['search_view'] . '/views/additional_options.php', $data );
+				
+				$mf_view = WOOF_HELPER::safe_view_slug( $this->woof_settings['meta_filter'][ $key ]['search_view'] );
+				if ( '' !== $mf_view ) {
+					woof()->render_html_e( $this->get_ext_path() . 'html_types/' . $mf_view . '/views/additional_options.php', $data );
+				}
+
 				?>
 						</li>
 		<?php

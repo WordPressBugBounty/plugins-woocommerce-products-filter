@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'No direct access allowed' );
 }
 
-// 21-02-2025
+// 10-07-2026
 final class WOOF_FRONT_BUILDER_OPTIONS_SECTIONS {
 
 	private $db       = null;
@@ -89,7 +89,7 @@ final class WOOF_FRONT_BUILDER_OPTIONS_SECTIONS {
 		if ( taxonomy_exists( $section_key ) ) {
 			$options_file = 'taxonomies';
 		} elseif ( isset( woof()->settings['meta_filter'] ) && ! empty( woof()->settings['meta_filter'] ) && isset( woof()->settings['meta_filter'][ $section_key ] ) ) {
-				$options_file = 'meta/' . woof()->settings['meta_filter'][ $section_key ]['search_view'];
+			$options_file = 'meta/' . WOOF_HELPER::safe_view_slug( woof()->settings['meta_filter'][ $section_key ]['search_view'] );
 		} else {
 			$options_file = $section_key;
 

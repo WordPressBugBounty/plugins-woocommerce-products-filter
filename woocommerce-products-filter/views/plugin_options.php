@@ -1219,9 +1219,9 @@ WP_Filesystem();
 										<div class="woof-control">
 
 											<?php
-											if ( ! isset( $woof_settings['swoof_search_slug'] ) or $this->show_notes ) {
+											
 												$woof_settings['swoof_search_slug'] = '';
-											}
+											
 											?>
 
 											<input placeholder="swoof" type="text" name="woof_settings[swoof_search_slug]" value="<?php echo esc_attr( $woof_settings['swoof_search_slug'] ); ?>" id="swoof_search_slug" />

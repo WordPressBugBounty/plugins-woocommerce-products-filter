@@ -7,7 +7,7 @@
 	Tested up to: 7.0
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.0
+	Version: 1.4.1
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
@@ -103,7 +103,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.0' );
+define( 'WOOF_VERSION', '1.4.1' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -121,7 +121,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 24-06-2026
+// 10-07-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -361,7 +361,7 @@ final class HUSKY {
 
 	public function woof_save_options() {
 
-		// save options can admin only <notifications@pluginvulnerabilities.com>
+		// save options can admin onl
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}

@@ -31,6 +31,19 @@ final class WOOF_HELPER {
 			}
 		}
 	}
+	
+	/**
+	* Validate a view/type slug used to build an include path.
+	* Allows only simple slug characters; rejects dots, slashes and
+	* backslashes, so no directory-traversal sequence can pass. Returns ''
+	* when the value is not a valid slug.
+	*/
+   public static function safe_view_slug( $value ) {
+	   if ( is_string( $value ) && preg_match( '/^[a-z0-9_-]+$/i', $value ) ) {
+		   return $value;
+	   }
+	   return '';
+   }
 
 	public static function get_server_var( $var ) {
 		return sanitize_text_field( wp_unslash( urldecode( $_SERVER[$var] ) ) );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -50,6 +63,7 @@ final class WOOF_HELPER {
 		$is_html     = array( 'override_no_products' );
 		$is_textarea = array( 'init_only_on', 'custom_css_code', 'js_after_ajax_done' );
 		$is_js       = array();
+		$is_slug     = array( 'search_view' ); // keys used to build include paths must be strict slugs
 
 		$potential_html = array_intersect_key( woof()->settings ?? array(), array_flip( array( 'result_count_redraw', 'order_dropdown_redraw', 'per_page_redraw' ) ) );
 		$is_html        = array_merge( $is_html, array_filter( array_values( $potential_html ) ) );
@@ -57,13 +71,18 @@ final class WOOF_HELPER {
 		if ( is_array( $array ) && ! empty( $array ) ) {
 			foreach ( $array as $key => $data ) {
 				if ( is_array( $data ) ) {
-					self::sanitize_array( $data );
+					// Reassign the sanitized result: arrays are passed by value,
+					// so without this the nested values were never sanitized.
+					$array[ $key ] = self::sanitize_array( $data );
 				} else {
 					$key = sanitize_text_field( $key );
 					if ( in_array( $key, $is_html ) ) {
 						$array[ $key ] = wp_kses_post( wp_unslash( $data ) );
 					} elseif ( in_array( $key, $is_textarea ) ) {
 						$array[ $key ] = sanitize_textarea_field( $data );
+					} elseif ( in_array( $key, $is_slug ) ) {
+						// Strip anything that could form a traversal sequence.
+						$array[ $key ] = preg_replace( '/[^a-z0-9_-]/i', '', (string) $data );
 					} else {
 						$array[ $key ] = sanitize_text_field( $data );
 					}

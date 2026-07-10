@@ -2276,7 +2276,7 @@ section .woof-control-section:nth-child(2n+2) .woof-control-container .woof-desc
 }
 
 .woof_settings_promotion td img {
-	max-width: 90%;
+	max-width: 223px;
 	text-align: center;
 	border-radius: 4px;
 }

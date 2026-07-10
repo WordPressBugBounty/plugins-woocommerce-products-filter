@@ -1,11 +1,11 @@
 === HUSKY - Products Filter Professional for WooCommerce ===
 Contributors: RealMag777
-Donate link: https://pluginus.net/affiliate/woocommerce-products-filter
+Donate link: https://products-filter.com/downloads
 Tags: filter, product filter, woocommerce, woof, ajax filter
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -181,6 +181,9 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.1 =
+* 1 Security fix from wordpress.org
 
 = 1.4.0 =
 * Fixed: shortcode [woof_slideout] attribute tax_exclude
