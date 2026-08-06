@@ -7,7 +7,7 @@
 	Tested up to: 7.0
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.1
+	Version: 1.4.2
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
@@ -103,7 +103,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.1' );
+define( 'WOOF_VERSION', '1.4.2' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -121,7 +121,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 10-07-2026
+// 06-08-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -389,28 +389,54 @@ final class HUSKY {
 				if ( class_exists( 'Polylang' ) ) {
 					$lang = get_locale();
 				}
-				if ( isset( $data['woof_settings']['wpml_tax_labels'] ) and ! empty( $data['woof_settings']['wpml_tax_labels'] ) ) {
-					$translations_string = $data['woof_settings']['wpml_tax_labels'];
-					$translations_string = explode( PHP_EOL, $translations_string );
-					$translations        = array();
-					if ( ! empty( $translations_string ) and is_array( $translations_string ) ) {
-						foreach ( $translations_string as $line ) {
-							if ( empty( $line ) ) {
-								continue;
-							}
 
-							$line = explode( ':', $line );
-							if ( ! isset( $translations[ $line[0] ] ) ) {
-								$translations[ $line[0] ] = array();
+				if ( isset( $data['woof_settings']['wpml_tax_labels'] ) and ! empty( $data['woof_settings']['wpml_tax_labels'] ) and is_string( $data['woof_settings']['wpml_tax_labels'] ) ) {
+						$translations_string = $data['woof_settings']['wpml_tax_labels'];
+
+						// \R matches \n, \r\n and \r, so parsing no longer depends on the
+						// server PHP_EOL or on the line endings the browser has sent.
+						$lines        = preg_split( '/\R/u', $translations_string );
+						$translations = array();
+						if ( ! empty( $lines ) and is_array( $lines ) ) {
+							foreach ( $lines as $line ) {
+								$line = trim( $line );
+								if ( '' === $line ) {
+									continue;
+								}
+
+								// Expected syntax: lang:Original Label^Translation
+								// Malformed lines are skipped instead of raising
+								// undefined offset warnings and storing nulls.
+								if ( ! preg_match( '/^([A-Za-z_-]+)\s*:\s*(.+?)\s*\^\s*(.+)$/u', $line, $parts ) ) {
+									continue;
+								}
+
+								$lang_code   = $parts[1];
+								$key_word    = trim( $parts[2] );
+								$translation = trim( $parts[3] );
+
+								if ( '' === $key_word or '' === $translation ) {
+									continue;
+								}
+
+								if ( ! isset( $translations[ $lang_code ] ) ) {
+									$translations[ $lang_code ] = array();
+								}
+								$translations[ $lang_code ][ $key_word ] = $translation;
 							}
-							$tmp                                 = explode( '^', $line[1] );
-							$translations[ $line[0] ][ $tmp[0] ] = $tmp[1];
+						}
+
+						if ( ! empty( $translations ) ) {
+							$data['woof_settings']['wpml_tax_labels'] = $translations;
+						} else {
+							// Nothing parsed out of a non-empty string means the input was
+							// broken. Keep the stored translations instead of wiping them.
+							$stored_settings                          = get_option( 'woof_settings', array() );
+							$data['woof_settings']['wpml_tax_labels'] = $stored_settings['wpml_tax_labels'] ?? array();
 						}
 					}
-
-					$data['woof_settings']['wpml_tax_labels'] = $translations;
+				
 				}
-			}
 
 			$data['woof_settings'] = WOOF_HELPER::sanitize_array( $data['woof_settings'] );
 
@@ -1118,7 +1144,7 @@ final class HUSKY {
 		var woof_lang_loading = "<?php esc_html_e( 'Loading ...', 'woocommerce-products-filter' ); ?>";
 
 		<?php if ( isset( $this->settings['default_overlay_skin_word'] ) and ! empty( $this->settings['default_overlay_skin_word'] ) ) : ?>
-			woof_lang_loading = "<?php echo esc_html( $this->settings['default_overlay_skin_word'], 'woocommerce-products-filter' ); ?>";
+			woof_current_values = <?php echo wp_json_encode( (object) $this->get_request_data(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP ); ?>;
 		<?php endif; ?>
 
 		var woof_lang_show_products_filter = "<?php esc_html_e( 'show products filter', 'woocommerce-products-filter' ); ?>";
@@ -1192,7 +1218,7 @@ final class HUSKY {
 
 		var woof_ext_init_functions = null;
 		<?php if ( ! empty( WOOF_EXT::$includes['js_init_functions'] ) ) : ?>
-			woof_ext_init_functions = '<?php echo json_encode( wc_clean( WOOF_EXT::$includes['js_init_functions'] ) ); ?>';
+			woof_ext_init_functions = '<?php echo wp_json_encode( wc_clean( WOOF_EXT::$includes['js_init_functions'] ), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP ); ?>';
 		<?php endif; ?>
 
 

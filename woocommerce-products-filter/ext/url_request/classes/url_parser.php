@@ -442,7 +442,7 @@ class WOOF_URL_PARSER {
 							$separator = '-and-';
 						}
 						$separator                  = '-and-';
-						$terms_slug                 = explode( $separator, $s_match );
+						$terms_slug                 = array_map( 'sanitize_title', explode( $separator, $s_match ) );
 						$filter_data[ $f_real_key ] = implode( ',', $terms_slug );
 					} elseif ( $f_key == $string and isset( $this->special_filters[ $f_key ] ) ) {
 
@@ -452,8 +452,8 @@ class WOOF_URL_PARSER {
 						$prices = explode( '-to-', $s_match );
 
 						if ( isset( $prices[1] ) ) {
-							$filter_data['min_price'] = $prices[0];
-							$filter_data['max_price'] = $prices[1];
+							$filter_data['min_price'] = (float) $prices[0];
+							$filter_data['max_price'] = (float) $prices[1];
 						}
 					} else {
 
@@ -463,7 +463,7 @@ class WOOF_URL_PARSER {
 						if ( isset( $settings['meta_filter'] ) and isset( $settings['meta_filter'][ $f_real_key ] ) ) {
 							$f_real_key = $settings['meta_filter'][ $f_real_key ]['search_view'] . '_' . $f_real_key;
 						}
-						$filter_data[ $f_real_key ] = str_replace( $needle, $replase, $s_match );
+						$filter_data[ $f_real_key ] = sanitize_text_field( str_replace( $needle, $replase, $s_match ) );
 					}
 				}
 			}

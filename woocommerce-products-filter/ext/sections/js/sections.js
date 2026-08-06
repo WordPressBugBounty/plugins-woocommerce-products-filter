@@ -2,8 +2,10 @@
 function woof_sections_html_items() {
 
     var sections = jQuery('.woof_section_tab');
-    var request = woof_current_values.replace(/(\\)/, '');
-    request = JSON.parse(request);
+    // This file self-invokes at load time, before front.js normalises the value.
+    var request = (typeof woof_current_values === 'string')
+            ? JSON.parse(woof_current_values.replace(/\\/g, ''))
+            : woof_current_values;
 
     jQuery.each(sections, function (e, item) {
         var _this = this;

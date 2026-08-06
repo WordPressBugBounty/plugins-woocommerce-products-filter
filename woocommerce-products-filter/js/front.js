@@ -2,13 +2,18 @@
 var woof_redirect = ''; //if we use redirect attribute in shortcode [woof]
 var woof_reset_btn_action = false;
 var woof_additional_fields = {};
+
 jQuery(function () {
-    try {
-        woof_current_values = JSON.parse(woof_current_values);
-    } catch (e) {
-        woof_current_values = null;
+    // PHP prints woof_current_values as a real object now. The string branch is
+    // kept only for third party code that may still assign a JSON string to it.
+    if (typeof woof_current_values === 'string') {
+        try {
+            woof_current_values = JSON.parse(woof_current_values);
+        } catch (e) {
+            woof_current_values = {};
+        }
     }
-    if (woof_current_values == null || woof_current_values.length == 0) {
+    if (woof_current_values == null || Array.isArray(woof_current_values)) {
         woof_current_values = {};
     }
 });

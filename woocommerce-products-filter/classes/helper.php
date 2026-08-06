@@ -58,27 +58,30 @@ final class WOOF_HELPER {
 		return map_deep( wp_unslash( $query_array ), 'sanitize_text_field' );
 	}
 
-	public static function sanitize_array( $array ) {
+	public static function sanitize_array( $array, $path = '' ) {
 
 		$is_html     = array( 'override_no_products' );
-		$is_textarea = array( 'init_only_on', 'custom_css_code', 'js_after_ajax_done' );
+		$is_textarea = array( 'init_only_on', 'custom_css_code', 'js_after_ajax_done', 'wpml_tax_labels', 'woof_conditionals', 'yoast_sitemap' );
 		$is_js       = array();
 		$is_slug     = array( 'search_view' ); // keys used to build include paths must be strict slugs
 
-		$potential_html = array_intersect_key( woof()->settings ?? array(), array_flip( array( 'result_count_redraw', 'order_dropdown_redraw', 'per_page_redraw' ) ) );
-		$is_html        = array_merge( $is_html, array_filter( array_values( $potential_html ) ) );
+		// Nested multiline fields matched by their position in the settings tree,
+		// because their key names are too generic to be whitelisted globally.
+		$is_textarea_path = array( '~/seo_rules/[^/]+/[^/]+/description$~' );
+		$is_html_path     = array( '~/seo_rules/[^/]+/[^/]+/text$~' );
 
 		if ( is_array( $array ) && ! empty( $array ) ) {
 			foreach ( $array as $key => $data ) {
 				if ( is_array( $data ) ) {
 					// Reassign the sanitized result: arrays are passed by value,
 					// so without this the nested values were never sanitized.
-					$array[ $key ] = self::sanitize_array( $data );
+					$array[ $key ] = self::sanitize_array( $data, $path . '/' . $key );
 				} else {
-					$key = sanitize_text_field( $key );
-					if ( in_array( $key, $is_html ) ) {
+					$key      = sanitize_text_field( $key );
+					$key_path = $path . '/' . $key;
+					if ( in_array( $key, $is_html ) || self::path_matches( $key_path, $is_html_path ) ) {
 						$array[ $key ] = wp_kses_post( wp_unslash( $data ) );
-					} elseif ( in_array( $key, $is_textarea ) ) {
+					} elseif ( in_array( $key, $is_textarea ) || self::path_matches( $key_path, $is_textarea_path ) ) {
 						$array[ $key ] = sanitize_textarea_field( $data );
 					} elseif ( in_array( $key, $is_slug ) ) {
 						// Strip anything that could form a traversal sequence.
@@ -91,6 +94,20 @@ final class WOOF_HELPER {
 		}
 
 		return $array;
+	}
+	
+	/**
+	 * Check a settings-tree path like /woof_settings/woof_url_request/seo_rules/en/k1/text
+	 * against a list of regular expressions.
+	 */
+	private static function path_matches( $key_path, $patterns ) {
+		foreach ( $patterns as $pattern ) {
+			if ( preg_match( $pattern, $key_path ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static function sanitize_html_fields_array( $fiels ) {
