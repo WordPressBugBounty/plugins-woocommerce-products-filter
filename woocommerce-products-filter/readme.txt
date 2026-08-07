@@ -5,7 +5,7 @@ Tags: filter, product filter, woocommerce, woof, ajax filter
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -181,6 +181,9 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.3 =
+* Fixed: on sites where the shop page is also the static front page, SEO-friendly filter URLs were redirected to the home page and all filters were lost. This started with WooCommerce 11.0.0, which now sets the shop page as the queried object on product archives; WordPress then treats the filter URL as a non-canonical address of the front page and redirects it. The plugin now prevents that redirect for its own filter URLs only, leaving canonical behaviour on the rest of the site untouched.
 
 = 1.4.2 =
 * https://wordpress.org/support/topic/wpml-translation-issue-2/

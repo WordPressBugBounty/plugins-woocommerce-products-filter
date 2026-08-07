@@ -7,14 +7,14 @@
 	Tested up to: 7.0
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.2
+	Version: 1.4.3
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
 	Domain Path: /languages
 	Forum URI: https://pluginus.net/support/forum/woof-woocommerce-products-filter/
 	WC requires at least: 6.0
-	WC tested up to: 10.9
+	WC tested up to: 11.0
 	Requires Plugins: woocommerce
 	License: GPL-2.0-or-later
 	License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -103,7 +103,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.2' );
+define( 'WOOF_VERSION', '1.4.3' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -121,7 +121,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 06-08-2026
+// 07-08-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -265,6 +265,7 @@ final class HUSKY {
 		// +++
 		add_filter( 'widget_text', 'do_shortcode' );
 		add_action( 'parse_query', array( $this, 'parse_query' ), 9999 );
+		add_filter( 'redirect_canonical', array( $this, 'fix_front_page_shop_canonical' ), 10, 2 );
 		add_action( 'rest_api_init', function() {
 			remove_action( 'parse_query', array( $this, 'parse_query' ), 9999 );
 		});
@@ -4063,6 +4064,67 @@ final class HUSKY {
 
 		return $query;
 		}
+		
+		/**
+		* WooCommerce 11.0 sets the shop page as the queried object on product
+		* archives (class-wc-query.php, "Set queried object for any shop page
+		* scenario"). When the shop page is also the static front page, WordPress
+		* canonical redirect sees any extra path segment as a non canonical URL
+		* of the front page and sends it to the home URL, dropping the filter.
+		* Disable the redirect only for our own filter URLs.
+		*/
+	   public function fix_front_page_shop_canonical( $redirect_url, $requested_url ) {
+
+		   if ( ! $redirect_url ) {
+			   return $redirect_url;
+		   }
+
+		   // The bug only exists when the shop page IS the static front page.
+		   if ( 'page' !== get_option( 'show_on_front' ) ) {
+			   return $redirect_url;
+		   }
+
+		   if ( ! function_exists( 'wc_get_page_id' ) ) {
+			   return $redirect_url;
+		   }
+
+		   $front_id = (int) get_option( 'page_on_front' );
+		   $shop_id  = (int) wc_get_page_id( 'shop' );
+
+		   if ( ! $front_id || $front_id !== $shop_id ) {
+			   return $redirect_url;
+		   }
+
+		   if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
+			   return $redirect_url;
+		   }
+
+		   $path = wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), PHP_URL_PATH );
+
+		   if ( empty( $path ) ) {
+			   return $redirect_url;
+		   }
+
+		   $slug = $this->get_swoof_search_slug();
+
+		   if ( empty( $slug ) ) {
+			   return $redirect_url;
+		   }
+
+		  $segments = array_filter( explode( '/', trim( $path, '/' ) ) );
+
+		if ( ! in_array( $slug, $segments, true ) ) {
+			return $redirect_url;
+		}
+
+		// Suppress only the "go to the front page" redirect, so slash and slug
+		// normalization keeps working on these URLs.
+		if ( untrailingslashit( $redirect_url ) !== untrailingslashit( home_url() ) ) {
+			return $redirect_url;
+		}
+
+		return false;
+	   }
 	}
 
 //***
