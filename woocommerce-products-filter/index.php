@@ -7,7 +7,7 @@
 	Tested up to: 7.0
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.3
+	Version: 1.4.3.1
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
@@ -103,7 +103,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.3' );
+define( 'WOOF_VERSION', '1.4.3.1' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -121,7 +121,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 07-08-2026
+// 10-08-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -1138,14 +1138,14 @@ final class HUSKY {
 
 
 		<?php $woof_use_beauty_scroll = $this->get_option( 'use_beauty_scroll', 0 ); ?>
-		var woof_current_values = '[]';
+		var woof_current_values = {};
 		<?php if ( $this->get_request_data() ) { ?>
-			woof_current_values = '<?php echo json_encode( $this->get_request_data() ); ?>';
+			woof_current_values = <?php echo wp_json_encode( (object) $this->get_request_data(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP ); ?>;
 		<?php } ?>
 		var woof_lang_loading = "<?php esc_html_e( 'Loading ...', 'woocommerce-products-filter' ); ?>";
 
 		<?php if ( isset( $this->settings['default_overlay_skin_word'] ) and ! empty( $this->settings['default_overlay_skin_word'] ) ) : ?>
-			woof_current_values = <?php echo wp_json_encode( (object) $this->get_request_data(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP ); ?>;
+			woof_lang_loading = "<?php echo esc_html( $this->settings['default_overlay_skin_word'] ); ?>";
 		<?php endif; ?>
 
 		var woof_lang_show_products_filter = "<?php esc_html_e( 'show products filter', 'woocommerce-products-filter' ); ?>";
