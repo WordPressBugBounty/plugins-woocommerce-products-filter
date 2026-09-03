@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'No direct access allowed' );
 }
 
-global $wp_filesystem;
+global $wp_filesystem, $WOOF;
 		
 // Ensure WP_Filesystem is available
 if ( ! function_exists( 'WP_Filesystem' ) ) {
@@ -59,6 +59,145 @@ WP_Filesystem();
 			<div id="message" class="error fade"><p><strong><?php esc_html_e( 'ATTENTION! Your version of the woocommerce plugin is too obsolete. There is no warranty for working with HUSKY!!', 'woocommerce-products-filter' ); ?></strong></p></div>
 
 		<?php endif; ?>
+			
+			
+			
+			<?php
+// Upsell notice for the free line only. Hidden in every premium build.
+if ( $WOOF->show_notes ) :
+	?>
+	<div id="woof-upsell-notice" style="display:none;margin:0 0 18px 0;padding:16px 44px 16px 18px;position:relative;border:1px solid #d7ddf0;border-left:4px solid #2f55d4;border-radius:4px;background:#f6f8fe;font-size:13px;line-height:1.6;color:#23282d;">
+		<div style="font-size:15px;font-weight:700;margin-bottom:6px;">Get more out of HUSKY PRO</div>
+		<p style="margin:0 0 10px 0;">
+			Two reasons to look now, not later. First, distribution is changing: active development, updates
+			and sales of HUSKY are moving to <b>products-filter.com</b>. Second,
+			prices go up in <b>December 2026</b> — so right now you can lock in the current price <u>and</u> take
+			30% off on top of it. Use coupon code
+			<b style="font-family:Menlo,Consolas,monospace;font-size:14px;letter-spacing:1px;background:#eef2fd;padding:2px 8px;border-radius:3px;">WOOFCC30</b>. Subscribe before December and that rate stays yours permanently, every renewal, however high the price climbs later.
+		</p>
+		<p style="margin:0 0 10px 0;">
+			HUSKY Professional unlocks the full filter — same plugin, same settings, nothing new to learn,
+			plus updates and direct support from the developer:
+		</p>
+		<p style="margin:0 0 10px 0;padding:8px 12px;background:#eef2fd;border-radius:3px;">
+			All filter extensions included — Color, Image, Slider, SKU search and Hierarchy drop-down.<br>
+			Unlimited meta-field filters (the free version stops at two).<br>
+			Unlimited Smart Designer elements to build your own filter elements (the free version stops at one).<br>
+			Unlimited SEO-friendly filter URLs — every filter combination becomes a page that pulls organic
+			traffic from Google (the free version stops at two).
+		</p>
+		<p style="margin:0 0 10px 0;">
+			The prices go up in <b>December 2026</b>. Subscriptions started
+			before then keep their original rate permanently.
+		</p>
+		<p style="margin:0;">
+			<a href="https://products-filter.com/downloads?utm_source=plugin&amp;utm_medium=free_notice&amp;utm_campaign=upsell&amp;coupon=WOOFWP30" target="_blank" rel="noopener" style="display:inline-block;padding:7px 16px;border-radius:3px;background:#2f55d4;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 3px 5px 0 rgba(47,85,212,0.3);">GET PRO now &rarr;</a>
+			<span style="margin-left:10px;color:#6b7280;">The free version stays free and keeps working.</span>
+		</p>
+		<a href="#" id="woof-upsell-close" title="Hide permanently" style="position:absolute;top:10px;right:12px;text-decoration:none;color:#8a8f98;font-size:16px;line-height:1;">&times;</a>
+	</div>
+	<script>
+		( function () {
+			var key = 'woof_upsell_notice_hidden_1'; // bump the suffix to run a new campaign
+			var box = document.getElementById( 'woof-upsell-notice' );
+			if ( ! box ) {
+				return;
+			}
+			var hidden = false;
+			try {
+				hidden = window.localStorage.getItem( key ) === '1';
+			} catch ( e ) {
+				hidden = document.cookie.indexOf( key + '=1' ) !== -1;
+			}
+			if ( ! hidden ) {
+				box.style.display = 'block'; // reveal only when not dismissed, avoids a flash
+			}
+			document.getElementById( 'woof-upsell-close' ).addEventListener( 'click', function ( ev ) {
+				ev.preventDefault();
+				if ( ! window.confirm( 'Hide this message permanently? It will not be shown again in this browser.' ) ) {
+					return;
+				}
+				try {
+					window.localStorage.setItem( key, '1' );
+				} catch ( e ) {}
+				document.cookie = key + '=1; path=/; max-age=34560000; SameSite=Lax';
+				box.style.display = 'none';
+			} );
+		} )();
+	</script>
+<?php endif; ?>
+
+
+<?php
+// Migration notice: shown only in the standalone (CodeCanyon) premium build.
+// Hidden for the free line and for the Freemius build.
+if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
+	?>
+	<div id="woof-mig-notice" style="display:none;margin:0 0 18px 0;padding:16px 44px 16px 18px;position:relative;border:1px solid #d7ddf0;border-left:4px solid #2f55d4;border-radius:4px;background:#f6f8fe;font-size:13px;line-height:1.6;color:#23282d;">
+		<div style="font-size:15px;font-weight:700;margin-bottom:6px;">HUSKY is moving to direct distribution</div>
+		<p style="margin:0 0 8px 0;">
+			Envato has introduced a pricing policy we find unacceptable, so active development, updates and
+			distribution of HUSKY are moving to <b>products-filter.com</b>. New versions are published there,
+			and the plugin may be removed from CodeCanyon at any time. Support periods can no longer be extended
+			on CodeCanyon either — once yours runs out, there is nothing to renew there.
+		</p>
+		<p style="margin:0 0 10px 0;">
+			The new model is a yearly subscription covering updates and support, with a one-time lifetime option
+			for a single site. Because this is a migration, we are giving the people who have been with us on
+			CodeCanyon the best terms we will ever offer.
+		</p>
+		<p style="margin:0 0 10px 0;padding:10px 12px;background:#fff;border:1px dashed #b9c4e6;border-radius:3px;">
+			<b>CodeCanyon customers — 30% off, locked for life.</b> Use coupon code
+			<b style="font-family:Menlo,Consolas,monospace;font-size:14px;letter-spacing:1px;background:#eef2fd;padding:2px 8px;border-radius:3px;">WOOFCC30</b>
+			at checkout. Nothing to fill in and no email needed — the discount is applied on the payment form.
+			<br>
+			<b style="text-decoration:underline;">The discount applies to every renewal, not just the first payment.</b>
+			Whatever the price becomes later, your rate stays where it is today, with updates and support included
+			for as long as your license is active.
+		</p>
+		<p style="margin:0 0 10px 0;">
+			Prices are going up in <b>December 2026</b>. Subscriptions started before then keep their original
+			rate permanently; anyone joining afterwards pays the new one. There is no rush on our side — we simply
+			cannot offer these terms again once the migration is over.
+		</p>
+		<p style="margin:0;">
+			<a href="https://products-filter.com/downloads?utm_source=plugin&amp;utm_medium=settings_notice&amp;utm_campaign=migration&amp;coupon=WOOFCC30" target="_blank" rel="noopener" style="display:inline-block;padding:7px 16px;border-radius:3px;background:#2f55d4;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 3px 5px 0 rgba(47,85,212,0.3);">Lock in my 30% for life &rarr;</a>
+			<span style="margin-left:10px;color:#6b7280;">Your current copy keeps working either way.</span>
+		</p>
+		<a href="#" id="woof-mig-close" title="Hide permanently" style="position:absolute;top:10px;right:12px;text-decoration:none;color:#8a8f98;font-size:16px;line-height:1;">&times;</a>
+	</div>
+	<script>
+		( function () {
+			var key = 'woof_migration_notice_hidden_1'; // bump the suffix to run a new campaign
+			var box = document.getElementById( 'woof-mig-notice' );
+			if ( ! box ) {
+				return;
+			}
+			var hidden = false;
+			try {
+				hidden = window.localStorage.getItem( key ) === '1';
+			} catch ( e ) {
+				hidden = document.cookie.indexOf( key + '=1' ) !== -1;
+			}
+			if ( ! hidden ) {
+				box.style.display = 'block'; // reveal only when not dismissed, avoids a flash
+			}
+			document.getElementById( 'woof-mig-close' ).addEventListener( 'click', function ( ev ) {
+				ev.preventDefault();
+				if ( ! window.confirm( 'Hide this message permanently? It will not be shown again in this browser.' ) ) {
+					return;
+				}
+				try {
+					window.localStorage.setItem( key, '1' );
+				} catch ( e ) {}
+				document.cookie = key + '=1; path=/; max-age=34560000; SameSite=Lax';
+				box.style.display = 'none';
+			} );
+		} )();
+	</script>
+<?php endif; ?>
+	
+	
 
 		<div id="tabs" class="woof-tabs">
 

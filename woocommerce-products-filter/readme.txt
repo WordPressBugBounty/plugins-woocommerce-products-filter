@@ -3,9 +3,9 @@ Contributors: RealMag777
 Donate link: https://products-filter.com/downloads
 Tags: filter, product filter, woocommerce, woof, ajax filter
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.3.1
+Stable tag: 1.4.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -181,6 +181,9 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.3.2 =
+* Some little fixes and prepares before moving to woo.com
 
 = 1.4.3.1 =
 * Issue related to wordpress.org version: related to option "Loading word" and additional security fix

@@ -4,10 +4,10 @@
 	Plugin URI: https://products-filter.com/
 	Description: HUSKY - WooCommerce Products Filter Professional. Flexible, easy and robust products filter for WooCommerce store site!
 	Requires at least: 6.0
-	Tested up to: 7.0
+	Tested up to: 7.1
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.3.1
+	Version: 1.4.3.2
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
@@ -23,6 +23,10 @@
 // update_option('woof_settings', []);//dev: nearly absolute reset of the plugin settings
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
+}
+
+if ( isset( $_REQUEST['disable_woof_plugin']) ) {
+	return;
 }
 
 add_action(
@@ -41,13 +45,15 @@ if ( file_exists( $husky_fs_bootstrap ) ) {
     require_once $husky_fs_bootstrap;
 }
 
-// Register uninstall cleanup via a hook (replaces uninstall.php).
-register_uninstall_hook( __FILE__, 'woof_uninstall_cleanup' );
+if ( ! function_exists( 'woof_uninstall_cleanup' ) ) {
+	// Register uninstall cleanup via a hook (replaces uninstall.php).
+	register_uninstall_hook( __FILE__, 'woof_uninstall_cleanup' );
 
-function woof_uninstall_cleanup() {
-    global $wpdb;
-    // Drop the plugin's query cache table on uninstall.
-    $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}woof_query_cache" );
+	function woof_uninstall_cleanup() {
+		global $wpdb;
+		// Drop the plugin's query cache table on uninstall.
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}woof_query_cache" );
+	}
 }
 
 
@@ -103,7 +109,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.3.1' );
+define( 'WOOF_VERSION', '1.4.3.2' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -121,7 +127,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 10-08-2026
+// 03-09-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
