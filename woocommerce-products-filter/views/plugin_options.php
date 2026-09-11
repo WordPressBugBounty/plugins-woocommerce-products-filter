@@ -67,31 +67,25 @@ WP_Filesystem();
 if ( $WOOF->show_notes ) :
 	?>
 	<div id="woof-upsell-notice" style="display:none;margin:0 0 18px 0;padding:16px 44px 16px 18px;position:relative;border:1px solid #d7ddf0;border-left:4px solid #2f55d4;border-radius:4px;background:#f6f8fe;font-size:13px;line-height:1.6;color:#23282d;">
-		<div style="font-size:15px;font-weight:700;margin-bottom:6px;">Get more out of HUSKY PRO</div>
+		<div style="font-size:15px;font-weight:700;margin-bottom:6px;">Hit the limits of the free HUSKY?</div>
 		<p style="margin:0 0 10px 0;">
-			Two reasons to look now, not later. First, distribution is changing: active development, updates
-			and sales of HUSKY are moving to <b>products-filter.com</b>. Second,
-			prices go up in <b>December 2026</b> — so right now you can lock in the current price <u>and</u> take
-			30% off on top of it. Use coupon code
-			<b style="font-family:Menlo,Consolas,monospace;font-size:14px;letter-spacing:1px;background:#eef2fd;padding:2px 8px;border-radius:3px;">WOOFCC30</b>. Subscribe before December and that rate stays yours permanently, every renewal, however high the price climbs later.
-		</p>
-		<p style="margin:0 0 10px 0;">
-			HUSKY Professional unlocks the full filter — same plugin, same settings, nothing new to learn,
-			plus updates and direct support from the developer:
+			HUSKY Pro removes them. It is the same plugin with the same settings, so your current filter
+			keeps working as it is and you just get more options. Updates and support come directly from the developer.
 		</p>
 		<p style="margin:0 0 10px 0;padding:8px 12px;background:#eef2fd;border-radius:3px;">
-			All filter extensions included — Color, Image, Slider, SKU search and Hierarchy drop-down.<br>
-			Unlimited meta-field filters (the free version stops at two).<br>
-			Unlimited Smart Designer elements to build your own filter elements (the free version stops at one).<br>
-			Unlimited SEO-friendly filter URLs — every filter combination becomes a page that pulls organic
-			traffic from Google (the free version stops at two).
+			Color, Image, Slider, SKU search and Hierarchy drop-down filter types.<br>
+			Unlimited meta-field filters (free: 2).<br>
+			Unlimited Smart Designer elements for building your own filter types (free: 1).<br>
+			Unlimited SEO filter URLs, so filter combinations can become indexable pages in Google (free: 2).
 		</p>
 		<p style="margin:0 0 10px 0;">
-			The prices go up in <b>December 2026</b>. Subscriptions started
-			before then keep their original rate permanently.
+			Coupon
+			<b style="font-family:Menlo,Consolas,monospace;font-size:14px;letter-spacing:1px;background:#eef2fd;padding:2px 8px;border-radius:3px;">WOOFWP30</b>
+			gives 30% off on every renewal. Prices rise in <b>January 2027</b>. Subscriptions started before that keep
+			their current rate for as long as they renew.
 		</p>
 		<p style="margin:0;">
-			<a href="https://products-filter.com/downloads?utm_source=plugin&amp;utm_medium=free_notice&amp;utm_campaign=upsell&amp;coupon=WOOFWP30" target="_blank" rel="noopener" style="display:inline-block;padding:7px 16px;border-radius:3px;background:#2f55d4;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 3px 5px 0 rgba(47,85,212,0.3);">GET PRO now &rarr;</a>
+			<a href="https://products-filter.com/downloads?utm_source=plugin&amp;utm_medium=free_notice&amp;utm_campaign=upsell&amp;coupon=WOOFWP30" target="_blank" rel="noopener" style="display:inline-block;padding:7px 16px;border-radius:3px;background:#2f55d4;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 3px 5px 0 rgba(47,85,212,0.3);">Get HUSKY Pro &rarr;</a>
 			<span style="margin-left:10px;color:#6b7280;">The free version stays free and keeps working.</span>
 		</p>
 		<a href="#" id="woof-upsell-close" title="Hide permanently" style="position:absolute;top:10px;right:12px;text-decoration:none;color:#8a8f98;font-size:16px;line-height:1;">&times;</a>
@@ -156,7 +150,7 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 			for as long as your license is active.
 		</p>
 		<p style="margin:0 0 10px 0;">
-			Prices are going up in <b>December 2026</b>. Subscriptions started before then keep their original
+			Prices are going up in <b>January 2027</b>. Subscriptions started before then keep their original
 			rate permanently; anyone joining afterwards pays the new one. There is no rush on our side — we simply
 			cannot offer these terms again once the migration is over.
 		</p>

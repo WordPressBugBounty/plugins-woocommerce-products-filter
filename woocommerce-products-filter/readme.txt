@@ -5,9 +5,11 @@ Tags: filter, product filter, woocommerce, woof, ajax filter
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.3.2
+Stable tag: 1.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+WC requires at least: 6.0
+WC tested up to: 11.1
 
 HUSKY - WooCommerce Products Filter Professional (former name is WOOF) – flexible, easy and robust professional filter for products for WooCommerce
 
@@ -181,6 +183,10 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.4 =
+* Security: fixed reflected XSS in the text search label (s / woof_text parameters). Thanks to Dthangws and Patchstack.
+* Hardening: only users with the unfiltered_html capability can change the "JavaScript code after AJAX is done" setting.
 
 = 1.4.3.2 =
 * Some little fixes and prepares before moving to woo.com

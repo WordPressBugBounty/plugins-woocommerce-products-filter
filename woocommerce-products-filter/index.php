@@ -7,14 +7,14 @@
 	Tested up to: 7.1
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.3.2
+	Version: 1.4.4
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
 	Domain Path: /languages
 	Forum URI: https://pluginus.net/support/forum/woof-woocommerce-products-filter/
 	WC requires at least: 6.0
-	WC tested up to: 11.0
+	WC tested up to: 11.1
 	Requires Plugins: woocommerce
 	License: GPL-2.0-or-later
 	License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-if ( isset( $_REQUEST['disable_woof_plugin']) ) {
+if ( isset( $GLOBALS['disable_woof_plugin']) ) {
 	return;
 }
 
@@ -55,7 +55,6 @@ if ( ! function_exists( 'woof_uninstall_cleanup' ) ) {
 		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}woof_query_cache" );
 	}
 }
-
 
 if ( class_exists( 'WOOF' ) ) {
     return;
@@ -109,7 +108,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.3.2' );
+define( 'WOOF_VERSION', '1.4.4' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -127,7 +126,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 03-09-2026
+// 11-09-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -368,7 +367,7 @@ final class HUSKY {
 
 	public function woof_save_options() {
 
-		// save options can admin onl
+		// save options can admin only <notifications@pluginvulnerabilities.com>
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
@@ -448,10 +447,19 @@ final class HUSKY {
 			$data['woof_settings'] = WOOF_HELPER::sanitize_array( $data['woof_settings'] );
 
 			// +++
+			
 			if ( is_array( $data['woof_settings'] ) ) {
 				$data['woof_settings']['default_overlay_skin_word'] = WOOF_HELPER::escape( $data['woof_settings']['default_overlay_skin_word'] );
+
+				// Arbitrary JS may only be changed by users allowed to post unfiltered HTML
+				if ( ! current_user_can( 'unfiltered_html' ) ) {
+					$stored = get_option( 'woof_settings', array() );
+					$data['woof_settings']['js_after_ajax_done'] = $stored['js_after_ajax_done'] ?? '';
+				}
+
 				update_option( 'woof_settings', $data['woof_settings'] );
 			}
+			
 			wp_cache_flush();
 		}
 
@@ -476,7 +484,7 @@ final class HUSKY {
 		var woof_lang_want_to_download_page = "<?php esc_html_e( 'Hi! In the free version of HUSKY you can operate with 1 element! If you want to create more elements you can make upgrade to the premium version of the plugin. Would you like to visit the plugin page?', 'woocommerce-products-filter' ); ?>";
 		var woof_abspath = "<?php echo esc_html( realpath( ABSPATH ) ); ?>";
 		var woof_ext_path = "<?php echo esc_html( realpath( $this->get_custom_ext_path() ) ) . '/'; ?>";
-		var woof_show_notes = <?php echo intval( $this->show_notes ? 1 : 0 ); ?>;
+		var woof_show_notes = 1;
 		<?php
 		$stxt = ob_get_clean();
 		wp_add_inline_script( 'woof', $stxt, 'before' );
@@ -712,7 +720,6 @@ final class HUSKY {
 			'<a target="_blank" href="https://products-filter.com/documentation">' . esc_html__( 'Documentation', 'woocommerce-products-filter' ) . '</a>',
 		);
 
-	
 			$buttons[] = '<a target="_blank" style="color: red; font-weight: bold;" href="https://products-filter.com/downloads">' . esc_html__( 'Go Pro!', 'woocommerce-products-filter' ) . '</a>';
 		
 
@@ -1008,6 +1015,9 @@ final class HUSKY {
 				$term        = $this->get_term_from_cleared_url( $cleared_url );
 				if ( $term ) {
 					$this->set_really_current_term( $term );
+				} else {
+					// Not a taxonomy page (e.g. shop): reset the term remembered from the previous page
+					$this->set_really_current_term();
 				}
 			} elseif ( isset( $request_data['really_curr_tax'] ) ) {
 				$tmp = explode( '-', $request_data['really_curr_tax'], 2 );
@@ -1151,7 +1161,7 @@ final class HUSKY {
 		var woof_lang_loading = "<?php esc_html_e( 'Loading ...', 'woocommerce-products-filter' ); ?>";
 
 		<?php if ( isset( $this->settings['default_overlay_skin_word'] ) and ! empty( $this->settings['default_overlay_skin_word'] ) ) : ?>
-			woof_lang_loading = "<?php echo esc_html( $this->settings['default_overlay_skin_word'] ); ?>";
+			woof_lang_loading = "<?php echo esc_html( $this->settings['default_overlay_skin_word']); ?>";
 		<?php endif; ?>
 
 		var woof_lang_show_products_filter = "<?php esc_html_e( 'show products filter', 'woocommerce-products-filter' ); ?>";
@@ -1270,12 +1280,20 @@ final class HUSKY {
 		do_action( 'woof_after_inline_js' );
 		wp_localize_script( 'woof_front', 'woof_filter_titles', $this->get_all_filter_titles() );
 		$text_data = array();
+		
 		if ( ! empty( WOOF_EXT::$includes['js_lang_custom'] ) ) {
 			foreach ( WOOF_EXT::$includes['js_lang_custom'] as $js_key_lang => $js_text ) {
-				$text_data[ $js_key_lang ] = $js_text;
+				// wp_localize_script() runs html_entity_decode() over every scalar value.
+				// Pre-encode with double_encode = true so that the decode only removes
+				// this extra layer and JS receives exactly the already-escaped PHP string.
+				// Without this, entities from the request (&lt; etc.) become live markup.
+				$text_data[ $js_key_lang ] = is_scalar( $js_text )
+					? htmlspecialchars( (string) $js_text, ENT_QUOTES, 'UTF-8', true )
+					: $js_text;
 			}
 			wp_localize_script( 'woof_front', 'woof_ext_filter_titles', $text_data );
 		}
+		
 		$js_data = '';
 		if ( ! empty( WOOF_EXT::$includes['js_code_custom'] ) ) {
 			foreach ( WOOF_EXT::$includes['js_code_custom'] as $js_key_code => $js_code ) {
@@ -1599,6 +1617,9 @@ final class HUSKY {
 		if ( ! isset( $curr_term['taxonomy'] ) ) {
 			$curr_term['taxonomy'] = '';
 		}
+		if ( ! isset( $curr_term['slug'] ) ) {
+			$curr_term['slug'] = '';
+		}
 		// +++
 		if ( ! empty( $additional_taxes ) ) {
 			$opposition_terms = $this->_expand_additional_taxes_string( $additional_taxes );
@@ -1618,6 +1639,7 @@ final class HUSKY {
 			$o                                = $this->get_really_current_term();
 			$opposition_terms[ $o->taxonomy ] = array( $o->slug );
 		}
+		
 		// $opposition_terms - all terms from $additional_taxes or/and from really_current_term
 		// it is always in opposition
 		$in_query_terms            = array(); // terms from request
@@ -3898,7 +3920,7 @@ final class HUSKY {
 			}
 		}
 
-		public function wc_template_loop_product_replaced_thumb() {
+	public function wc_template_loop_product_replaced_thumb() {
 		global $product;
 		$needed = array();
 		if (isset($this->settings['show_images_by_attr'])) {
