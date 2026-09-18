@@ -7,7 +7,7 @@
 	Tested up to: 7.1
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.4
+	Version: 1.4.5
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
@@ -108,7 +108,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.4' );
+define( 'WOOF_VERSION', '1.4.5' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -126,7 +126,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 11-09-2026
+// 18-09-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -720,8 +720,9 @@ final class HUSKY {
 			'<a target="_blank" href="https://products-filter.com/documentation">' . esc_html__( 'Documentation', 'woocommerce-products-filter' ) . '</a>',
 		);
 
+	
 			$buttons[] = '<a target="_blank" style="color: red; font-weight: bold;" href="https://products-filter.com/downloads">' . esc_html__( 'Go Pro!', 'woocommerce-products-filter' ) . '</a>';
-		
+	
 
 		return array_merge( $buttons, $links );
 	}
@@ -2673,10 +2674,12 @@ final class HUSKY {
 									WOOF_EXT::$includes['applications'][$tpl_index]->draw($products);
 								}
 							} else {
-								$custom_tpl = str_replace('.' . pathinfo($custom_tpl, PATHINFO_EXTENSION), '', str_replace("..", "", $custom_tpl));
-								$this->render_html_e(get_theme_file_path($custom_tpl . ".php"), array(
-									'the_products' => $products
-								));
+								$custom_tpl = $this->sanitize_custom_tpl($custom_tpl);
+								if ($custom_tpl !== '') {
+									$this->render_html_e(get_theme_file_path($custom_tpl . ".php"), array(
+										'the_products' => $products
+									));
+								}
 							}
 						}
 						?>
@@ -3585,37 +3588,75 @@ final class HUSKY {
 		return false;
 		}
 
-		public function render_html_e($pagepath, $data = array()) {
-		if (isset($data['pagepath'])) {
-			unset($data['pagepath']);
-			}
-		if (is_array($data) AND !empty($data)) {
-			extract($data);
+		/**
+		 * Only templates the site itself declares in its own content are allowed.
+		 * A value that arrives by AJAX and was never rendered on a real page is rejected.
+		 */
+		private function sanitize_custom_tpl($custom_tpl) {
+			$custom_tpl = (string) $custom_tpl;
+
+			// Strip a trailing .php the same way the old code did, before removing dots
+			if (strtolower(pathinfo($custom_tpl, PATHINFO_EXTENSION)) === 'php') {
+				$custom_tpl = substr($custom_tpl, 0, -4);
+				}
+
+			// No dots at all: kills traversal and any extension trick
+			$custom_tpl = preg_replace('~[^a-zA-Z0-9_\-/]~', '', $custom_tpl);
+			$custom_tpl = trim(preg_replace('~/+~', '/', $custom_tpl), '/');
+
+			if ($custom_tpl === '') {
+				return '';
+				}
+
+			$allowed = apply_filters('woof_allowed_custom_tpl', (array) get_option('woof_custom_tpl_allowed', array()));
+
+			if (in_array($custom_tpl, $allowed, true)) {
+				return $custom_tpl;
+				}
+
+			// An AJAX request can never introduce a new template
+			if (defined('DOING_AJAX') AND DOING_AJAX) {
+				return '';
+				}
+
+			// Rendered from the page content by the site owner: remember it for later AJAX calls
+			$allowed[] = $custom_tpl;
+			update_option('woof_custom_tpl_allowed', array_slice(array_values(array_unique($allowed)), -20), false);
+
+			return $custom_tpl;
 			}
 
-		$pagepath = realpath(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $pagepath));
-		if (!$pagepath) {
-			return;
-			}
-		include($pagepath);// nosemgrep
-		}
+			public function render_html_e($pagepath, $data = array()) {
+			if (isset($data['pagepath'])) {
+				unset($data['pagepath']);
+				}
+			if (is_array($data) AND !empty($data)) {
+				extract($data);
+				}
 
-		public function render_html($pagepath, $data = array()) {
-		if (isset($data['pagepath'])) {
-			unset($data['pagepath']);
-			}
-		if (is_array($data) AND !empty($data)) {
-			extract($data);
-			}
-
-		$pagepath = realpath(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $pagepath));
-		if (!$pagepath) {
-			return '';
+			$pagepath = realpath(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $pagepath));
+			if (!$pagepath) {
+				return;
+				}
+			include($pagepath);// nosemgrep
 			}
 
-		ob_start();
-		include($pagepath);// nosemgrep
-		return ob_get_clean();
+			public function render_html($pagepath, $data = array()) {
+			if (isset($data['pagepath'])) {
+				unset($data['pagepath']);
+				}
+			if (is_array($data) AND !empty($data)) {
+				extract($data);
+				}
+
+			$pagepath = realpath(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $pagepath));
+			if (!$pagepath) {
+				return '';
+				}
+
+			ob_start();
+			include($pagepath);// nosemgrep
+			return ob_get_clean();
 		}
 
 		//******************************************* FEATURES SUGGESTIONS ***************************************************

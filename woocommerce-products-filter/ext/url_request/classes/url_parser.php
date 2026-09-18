@@ -405,10 +405,68 @@ class WOOF_URL_PARSER {
 				unset( $all_items[ $f_key ] );
 				$all_items['author'] = 'woof_author';
 			}
+			
+			$f_key = $this->resolve_seo_key_conflict( $all_items, $f_key, $f_real_keys );
 			$all_items[ $f_key ] = $f_real_keys; // to  do
 		}
 
 		return $all_items;
+	}
+	
+	/**
+	 * Two different filters can produce the same seo name: the 'pa_' prefix is
+	 * stripped from attributes, so the attribute 'pa_niveau' and a meta field
+	 * named 'niveau' both ask for the seo name 'niveau'. Previously the second
+	 * one silently overwrote the first, and after array_flip() the real key of
+	 * the loser disappeared from the map, so its values were dropped from the url.
+	 *
+	 * @param array  $all_items   Map built so far: seo name => real key.
+	 * @param string $f_key       Seo name the current filter asks for.
+	 * @param string $f_real_key  Real key of the current filter.
+	 *
+	 * @return string Seo name that is free to use.
+	 */
+	private function resolve_seo_key_conflict( &$all_items, $f_key, $f_real_key ) {
+
+		// No conflict, or the very same filter is being registered again.
+		if ( ! isset( $all_items[ $f_key ] ) || $all_items[ $f_key ] === $f_real_key ) {
+			return $f_key;
+		}
+
+		$holder = $all_items[ $f_key ];
+
+		// A registered taxonomy always keeps the short name, whatever the order
+		// of the filters in the settings is. This keeps existing urls stable.
+		if ( taxonomy_exists( $f_real_key ) && ! taxonomy_exists( $holder ) ) {
+			$all_items[ $this->build_fallback_seo_key( $all_items, $holder ) ] = $holder;
+			unset( $all_items[ $f_key ] );
+
+			return $f_key;
+		}
+
+		return $this->build_fallback_seo_key( $all_items, $f_real_key );
+	}
+
+	/**
+	 * Builds a unique seo name out of the real key of a filter.
+	 *
+	 * @param array  $all_items  Map built so far: seo name => real key.
+	 * @param string $f_real_key Real key of the filter.
+	 *
+	 * @return string
+	 */
+	private function build_fallback_seo_key( $all_items, $f_real_key ) {
+
+		$candidate = str_replace( '_', '-', $f_real_key );
+		$result    = $candidate;
+		$i         = 2;
+
+		while ( isset( $all_items[ $result ] ) && $all_items[ $result ] !== $f_real_key ) {
+			$result = $candidate . '-' . $i;
+			++$i;
+		}
+
+		return $result;
 	}
 
 	public function parse_url_query( $url_query ) {

@@ -86,6 +86,9 @@ function woof_get_submit_link() {
             request = request.replaceAll('^', '-to-');
             request = request.replaceAll(/\s+/g, '+');
             url_array.push(url_parser_data.filters[j] + '-' + request);
+         } else {
+            // The filter has a value but no seo name: its key is missing from the map.
+            console.warn('WOOF: filter "' + j + '" is not present in url_parser_data.filters, its value is dropped from the url');
         }
 
 
