@@ -62,6 +62,8 @@ WP_Filesystem();
 			
 			
 			
+			
+			
 			<?php
 // Upsell notice for the free line only. Hidden in every premium build.
 if ( $WOOF->show_notes ) :
@@ -1352,9 +1354,9 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 										<div class="woof-control">
 
 											<?php
-											
+											if ( ! isset( $woof_settings['swoof_search_slug'] ) or $this->show_notes ) {
 												$woof_settings['swoof_search_slug'] = '';
-											
+											}
 											?>
 
 											<input placeholder="swoof" type="text" name="woof_settings[swoof_search_slug]" value="<?php echo esc_attr( $woof_settings['swoof_search_slug'] ); ?>" id="swoof_search_slug" />
@@ -1431,8 +1433,9 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 										<div class="woof-control">
 
 											<?php
+											if ( ! isset( $woof_settings['override_no_products'] ) or $this->show_notes ) {
 												$woof_settings['override_no_products'] = '';
-											
+											}
 											?>
 
 											<textarea name="woof_settings[override_no_products]" id="override_no_products" ><?php echo wp_kses_post( wp_unslash( $woof_settings['override_no_products'] ) ); ?></textarea>
@@ -1513,13 +1516,15 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 												1 => esc_html__( 'Yes', 'woocommerce-products-filter' ),
 											);
 
+											if ( $this->show_notes ) {
 												unset( $hide_terms_count_txt[1] );
-											
+											}
 											?>
 
 											<?php
+											if ( ! isset( $woof_settings['hide_terms_count_txt'] ) or empty( $woof_settings['hide_terms_count_txt'] ) or $this->show_notes ) {
 												$woof_settings['hide_terms_count_txt'] = 0;
-											
+											}
 											?>
 
 											<select name="woof_settings[hide_terms_count_txt]">
@@ -2655,21 +2660,22 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 								<li><a href="https://products-filter.com/how-to-make-woof-more-seo-friendly/" target="_blank" class="woof-text-decoration-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="woof-fea woof-icon-sm woof-me-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg><?php esc_html_e( 'How to make HUSKY more SEO friendly', 'woocommerce-products-filter' ); ?></a></li>
 							</ul>
 						</div>
-						<br>
-						<div class="woof__section-title woof-mb-3">
+
+						
+						
+						<!-- <div class="woof__section-title woof-mb-3">
 							<h5><?php esc_html_e( 'Recommended plugins for your site flexibility and features', 'woocommerce-products-filter' ); ?>:</h5>
 						</div>
 
 						<ul class="woof__features-gallery woof__col-6">
-							<li><a target="_blank" href="https://products-filter.com/downloads"><img class="woof-rounded" width="300" src="<?php echo esc_url( WOOF_LINK ); ?>/img/plugin_options/banners/woof.png" alt=""></a></li>
-							<li><a target="_blank" href="https://bulk-editor.com/downloads"><img class="woof-rounded" width="300" src="<?php echo esc_url( WOOF_LINK ); ?>img/plugin_options/banners/bear.png" alt=""></a></li>
-							<li><a target="_blank" href="https://currency-switcher.com/downloads"><img class="woof-rounded" width="300" src="<?php echo esc_url( WOOF_LINK ); ?>img/plugin_options/banners/woot.png" alt=""></a></li>
 							<li>
-								<a href="https://wordpress.org/plugins/botoscope/" title="BOTOSCOPE - Bridge your WooCommerce store and Telegram" target="_blank">
-									<img width="280" src="<?php echo esc_url( WOOF_LINK ); ?>img/plugin_options/banners/botoscope.png" alt="BOTOSCOPE - Bridge your WooCommerce store and Telegram">
+								<a target="_blank" href="#">
+									<img class="woof-rounded" width="300" src="<?php echo esc_url( WOOF_LINK ); ?>/img/plugin_options/banners/woof.png" alt="">
 								</a>
 							</li>
-						</ul>
+						</ul> -->
+						
+						
 
 					</div>
 
@@ -3265,10 +3271,6 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 						<a href="https://wordpress.org/plugins/woocommerce-currency-switcher/" target="_blank"><img src="<?php echo esc_url( WOOF_LINK ); ?>img/plugin_options/banners/woocs.png" alt="FOX" /></a>
 					</td>
 
-					<td>
-						<h3>Botoscope:</h3>
-						<a href="https://wordpress.org/plugins/botoscope/" target="_blank" title="BOTOSCOPE - Bridge your WooCommerce store and Telegram"><img src="<?php echo esc_url( WOOF_LINK ); ?>img/plugin_options/banners/botoscope.png" style="width: 800px;" alt="<?php esc_html_e( 'BOTOSCOPE - Bridge your WooCommerce store and Telegram', 'woocommerce-products-filter' ); ?>" /></a>
-					</td>
 
 				</tr>
 			</tbody>

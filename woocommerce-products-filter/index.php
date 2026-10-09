@@ -7,14 +7,14 @@
 	Tested up to: 7.1
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.5
+	Version: 1.4.6
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
 	Domain Path: /languages
 	Forum URI: https://pluginus.net/support/forum/woof-woocommerce-products-filter/
 	WC requires at least: 6.0
-	WC tested up to: 11.1
+	WC tested up to: 11.2
 	Requires Plugins: woocommerce
 	License: GPL-2.0-or-later
 	License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -108,7 +108,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.5' );
+define( 'WOOF_VERSION', '1.4.6' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -126,7 +126,7 @@ require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
 
-// 18-09-2026
+// 09-10-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -457,6 +457,33 @@ final class HUSKY {
 					$data['woof_settings']['js_after_ajax_done'] = $stored['js_after_ajax_done'] ?? '';
 				}
 
+				// Multilingual: the settings page lists only the terms of the current language,
+				// so keep the stored colors and images of the terms which were not in the form
+				$saved_settings = get_option( 'woof_settings', array() );
+				if ( is_array( $saved_settings ) ) {
+					foreach ( array( 'color', 'color_img' ) as $key ) {
+						if ( empty( $saved_settings[ $key ] ) || ! is_array( $saved_settings[ $key ] ) ) {
+							continue;
+						}
+
+						$merged = ( isset( $data['woof_settings'][ $key ] ) && is_array( $data['woof_settings'][ $key ] ) ) ? $data['woof_settings'][ $key ] : array();
+						foreach ( $saved_settings[ $key ] as $tax_slug => $values ) {
+							if ( ! is_array( $values ) ) {
+								continue;
+							}
+							$new_values          = ( isset( $merged[ $tax_slug ] ) && is_array( $merged[ $tax_slug ] ) ) ? $merged[ $tax_slug ] : array();
+							$merged[ $tax_slug ] = $new_values + $values; // the submitted values have priority
+						}
+						$data['woof_settings'][ $key ] = $merged;
+					}
+
+					foreach ( $saved_settings as $key => $value ) {
+						if ( 0 === strpos( (string) $key, 'images_term_' ) && ! isset( $data['woof_settings'][ $key ] ) ) {
+							$data['woof_settings'][ $key ] = $value;
+						}
+					}
+				}
+
 				update_option( 'woof_settings', $data['woof_settings'] );
 			}
 			
@@ -484,7 +511,7 @@ final class HUSKY {
 		var woof_lang_want_to_download_page = "<?php esc_html_e( 'Hi! In the free version of HUSKY you can operate with 1 element! If you want to create more elements you can make upgrade to the premium version of the plugin. Would you like to visit the plugin page?', 'woocommerce-products-filter' ); ?>";
 		var woof_abspath = "<?php echo esc_html( realpath( ABSPATH ) ); ?>";
 		var woof_ext_path = "<?php echo esc_html( realpath( $this->get_custom_ext_path() ) ) . '/'; ?>";
-		var woof_show_notes = 1;
+		var woof_show_notes = <?php echo intval( $this->show_notes ? 1 : 0 ); ?>;
 		<?php
 		$stxt = ob_get_clean();
 		wp_add_inline_script( 'woof', $stxt, 'before' );
@@ -720,15 +747,21 @@ final class HUSKY {
 			'<a target="_blank" href="https://products-filter.com/documentation">' . esc_html__( 'Documentation', 'woocommerce-products-filter' ) . '</a>',
 		);
 
-	
+		if ( $this->show_notes ) {
 			$buttons[] = '<a target="_blank" style="color: red; font-weight: bold;" href="https://products-filter.com/downloads">' . esc_html__( 'Go Pro!', 'woocommerce-products-filter' ) . '</a>';
-	
+		}
 
 		return array_merge( $buttons, $links );
 	}
 
 	public function get_swoof_search_slug_opt() {
 		$slug = 'swoof';
+
+		if ( ! $this->show_notes ) {
+			if ( isset( $this->settings['swoof_search_slug'] ) and ! empty( $this->settings['swoof_search_slug'] ) ) {
+				$slug = $this->settings['swoof_search_slug'];
+			}
+		}
 
 		return $slug;
 	}
@@ -3492,28 +3525,34 @@ final class HUSKY {
 
 		if (is_admin()) {
 			return true;
-			}
+		}
 
 		//https://pluginus.net/support/topic/woof_disable_filter-doesn-t-disable-filter/
 		if (apply_filters('woof_disable_filter', false)) {
 			return false;
-			}
+		}
 
 		//+++
-		//do not exclude in widget page
-		if (isset($_SERVER['SCRIPT_URI'])) {
-			$uri = wp_parse_url(trim(WOOF_HELPER::get_server_var('SCRIPT_URI')));
+		
+		//+++
+		//+++
+		//do not exclude in widget page: the block widgets editor asks for the
+		//widget types over REST, and the widget must be registered by then.
+		//REST_REQUEST is defined only on parse_request, after this check runs,
+		//so the REST call is detected by the request uri itself
+		$request_uri = WOOF_HELPER::get_server_var('REQUEST_URI');
+		$is_rest_call = stripos($request_uri, '/' . rest_get_url_prefix() . '/') !== false
+				OR stripos($request_uri, 'rest_route=') !== false;
 
-			$uri = explode('/', trim($uri['path'], ' /'));
-			if ($uri[0] === 'wp-json') {
-				$show_legacy = array('widget-types', 'sidebars', 'widgets', 'batch');
-				$match = array_intersect($show_legacy, $uri);
-				if (count($match) != 0) {
+		if ($is_rest_call) {
+			$show_legacy = array('widget-types', 'sidebars', 'widgets', 'batch');
+			foreach ($show_legacy as $legacy_route) {
+				if (stripos($request_uri, '/' . $legacy_route) !== false) {
 					$this->is_activated = true;
 					return true;
-					}
 				}
 			}
+		}
 
 		//stop loading the plugins filters and its another functionality on all pages of the site
 		if (isset($this->settings['init_only_on']) AND !empty($this->settings['init_only_on'])) {

@@ -5,11 +5,11 @@ Tags: filter, product filter, woocommerce, woof, ajax filter
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 6.0
-WC tested up to: 11.1
+WC tested up to: 11.2
 
 HUSKY - WooCommerce Products Filter Professional (former name is WOOF) – flexible, easy and robust professional filter for products for WooCommerce
 
@@ -183,6 +183,21 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.6 =
+* Security fix. Thanks to Sawyer for the responsible disclosure and to Wordfence for coordinating it
+* Performance: with the SEO URL extension enabled, the filter url is now parsed once per request instead of on every request data call, which on pages with Dynamic Recount and Hide Empty could mean more than a thousand repeated parses. Thanks to Raphael for the profiling report
+* Performance: the price range of the price filter is now calculated once per page load instead of several times
+* Fix: WPML and Polylang: saving HUSKY settings in one language no longer resets the colors and images of terms in the other languages
+* Fix: WPML and Polylang: a translated term without its own color or image now uses the color or image of the same term in the default language, so it is enough to set them once
+* Fix: Polylang: the terms cache (option "Cache terms") is now kept per language
+* Fix: HUSKY widget was not available in the block widgets editor on servers that do not provide SCRIPT_URI (nginx and others)
+* Fix: PHP warning in WOOF_HELPER::get_server_var() when the requested server variable is not set
+
+= 1.4.5.1 =
+* Performance: with the SEO URL extension enabled, the filter url is now parsed once per request instead of on every request data call, which on pages with Dynamic Recount and Hide Empty could mean more than a thousand repeated parses. Thanks to Raphael for the profiling report
+* Fix: HUSKY widget was not available in the block widgets editor on servers that do not provide SCRIPT_URI (nginx and others)
+* Fix: PHP warning in WOOF_HELPER::get_server_var() when the requested server variable is not set
 
 = 1.4.5 =
 * Security fix: Thanks to crow and Wordfence.

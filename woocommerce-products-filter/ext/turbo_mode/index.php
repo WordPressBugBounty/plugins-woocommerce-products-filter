@@ -174,7 +174,7 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 			'link'              => $link,
 			'pre_load'          => 1,
 			'sale_ids'          => wc_get_product_ids_on_sale(),
-			'settings'          => $this->woof_settings,
+			'settings'          => $this->get_public_settings(),
 			'current_tax'       => $curr_tax,
 			'additional_tax'    => $this->attr_taxonomies,
 			'show_count'        => get_option( 'woof_show_count_turbo_mode', 0 ),
@@ -185,6 +185,24 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 		);
 
 		wp_localize_script( 'woof_turbo_mode', 'woof_tm_data', $text_data );
+	}
+	
+	// Settings for the public woof_tm_data object: everything the turbo mode JS reads,
+	// without server-side data (Statistics DB credentials, cron secret keys)
+	private function get_public_settings() {
+		$settings = is_array( $this->woof_settings ) ? $this->woof_settings : array();
+
+		// Statistics config is server-side only (includes the external MySQL credentials)
+		unset( $settings['woof_stat'] );
+
+		// Secret keys of external cron links (turbo mode, quick search, etc.)
+		foreach ( $settings as $key => $value ) {
+			if ( is_array( $value ) && isset( $value['cron_secret_key'] ) ) {
+				unset( $settings[ $key ]['cron_secret_key'] );
+			}
+		}
+
+		return apply_filters( 'woof_turbo_mode_public_settings', $settings );
 	}
 
 	public function woof_print_applications_tabs() {

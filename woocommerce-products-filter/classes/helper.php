@@ -46,7 +46,10 @@ final class WOOF_HELPER {
    }
 
 	public static function get_server_var( $var ) {
-		return sanitize_text_field( wp_unslash( urldecode( $_SERVER[$var] ) ) );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( ! isset( $_SERVER[ $var ] ) ) {
+			return '';
+		}
+		return sanitize_text_field( wp_unslash( urldecode( $_SERVER[ $var ] ) ) );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 
 	public static function safe_parse_str( $link ) {
@@ -153,10 +156,12 @@ final class WOOF_HELPER {
 
 	public static function get_terms( $taxonomy, $hide_empty = true, $get_childs = true, $selected = 0, $category_parent = 0 ) {
 		static $collector = array();
-		$lang_key         = ''; // WPML compatibility
+		$lang_key         = ''; // WPML and Polylang compatibility
 		if ( class_exists( 'SitePress' ) ) {
 			// $lang_key = ICL_LANGUAGE_CODE;
 			$lang_key = apply_filters( 'wpml_current_language', null );
+		} elseif ( function_exists( 'pll_current_language' ) ) {
+			$lang_key = (string) pll_current_language();
 		}
 
 		if ( isset( $collector[ $taxonomy ] ) ) {
@@ -267,6 +272,53 @@ final class WOOF_HELPER {
 
 		$collector[ $taxonomy ] = $cats;
 		return $cats;
+	}
+
+	// Multilingual (WPML, Polylang): the same term in the default language as array( 'term_id', 'slug' ).
+	// Returns null if there is no multilingual plugin, the term is already in the default language
+	// or it has no translation in the default language.
+	public static function get_original_language_term( $term_id, $taxonomy ) {
+		static $cache = array();
+
+		$term_id = intval( $term_id );
+		if ( $term_id <= 0 || empty( $taxonomy ) ) {
+			return null;
+		}
+
+		$cache_key = $taxonomy . ':' . $term_id;
+		if ( array_key_exists( $cache_key, $cache ) ) {
+			return $cache[ $cache_key ];
+		}
+
+		$original_id = 0;
+		if ( class_exists( 'SitePress' ) ) {
+			$default_lang = apply_filters( 'wpml_default_language', null );
+			if ( ! empty( $default_lang ) ) {
+				$original_id = intval( apply_filters( 'wpml_object_id', $term_id, $taxonomy, false, $default_lang ) );
+			}
+		} elseif ( function_exists( 'pll_default_language' ) && function_exists( 'pll_get_term' ) ) {
+			$default_lang = pll_default_language();
+			if ( ! empty( $default_lang ) ) {
+				$original_id = intval( pll_get_term( $term_id, $default_lang ) );
+			}
+		}
+
+		$original = null;
+		if ( $original_id > 0 && $original_id !== $term_id ) {
+			// Read the slug directly: with WPML "Adjust IDs for multilingual functionality"
+			// get_term() may return the term translated into the current language
+			global $wpdb;
+			$slug = $wpdb->get_var( $wpdb->prepare( "SELECT slug FROM {$wpdb->terms} WHERE term_id = %d", $original_id ) );
+			if ( null !== $slug ) {
+				$original = array(
+					'term_id' => $original_id,
+					'slug'    => urldecode( $slug ), // non_latin_mode, as in get_terms()
+				);
+			}
+		}
+
+		$cache[ $cache_key ] = $original;
+		return $original;
 	}
 
 	// just for get_terms
@@ -709,20 +761,27 @@ final class WOOF_HELPER {
 					AND price_meta.meta_key IN ('" . implode( "','", array_map( 'esc_sql', apply_filters( 'woocommerce_price_filter_meta_keys', array( '_price' ) ) ) ) . "')
 					AND price_meta.meta_value > '' ";
 		$sql .= $tax_query_sql['where'] . $meta_query_sql['where'];
+		
 		$sql  = apply_filters( 'woof_get_filtered_price_query', $sql );
 
+		// The same price range is requested several times per page (min and max of every price filter),
+		// so each distinct query runs only once per request
+		static $request_cache = array();
+		$data_key = md5( $sql . 'woof' );
+		if ( array_key_exists( $data_key, $request_cache ) ) {
+			return $request_cache[ $data_key ];
+		}
+
 		if ( isset( woof()->settings['price_transient'] ) and woof()->settings['price_transient'] ) {
-			$data_key = md5( $sql . 'woof' );
-			$data     = get_transient( 'woof_min_max_prices' );
+			$data = get_transient( 'woof_min_max_prices' );
 
 			if ( ! is_array( $data ) ) {
 				$data = array();
 			}
 
 			if ( isset( $data[ $data_key ] ) ) {
-
-				$value = $data[ $data_key ];
-				return $value;
+				$request_cache[ $data_key ] = $data[ $data_key ];
+				return $data[ $data_key ];
 			}
 
             //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL built by WP_Meta_Query and WP_Tax_Query internals, not user input.
@@ -730,10 +789,12 @@ final class WOOF_HELPER {
 
 			$data[ $data_key ] = $prices;
 			set_transient( 'woof_min_max_prices', $data, 1 * 24 * 3600 ); // 1 day
+		} else {
+            //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL built by WP_Meta_Query and WP_Tax_Query internals, not user input.
+			$prices = $wpdb->get_row( $sql );
 		}
 
-        //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL built by WP_Meta_Query and WP_Tax_Query internals, not user input.
-		$prices = $wpdb->get_row( $sql );
+		$request_cache[ $data_key ] = $prices;
 		return $prices;
 	}
 

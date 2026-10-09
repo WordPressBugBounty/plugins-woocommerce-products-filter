@@ -99,7 +99,7 @@ export default class List {
                 li.dataset.viewtype = key;
             }
 
-            if (woof_front_sd_is_a) {
+            if (woof_front_sd_is_a && woof_front_show_notes) {
                 if (key.indexOf('woof_sd_') !== -1) {
                     this.list_has_sd = true;
                 }
@@ -225,7 +225,7 @@ export default class List {
                             } else {
                                 if (confirm(woof_lang_front_builder_confirm_sd)) {
 
-                                    if (woof_front_sd_is_a) {
+                                    if (woof_front_sd_is_a && woof_front_show_notes) {
                                         if (this.list_has_sd) {
 
                                             if (confirm(woof_lang_want_to_download_page)) {
@@ -342,7 +342,7 @@ export default class List {
 
     //to avoid confusing lets hide SD buttons if one is selected or SD created
     check_sd_buttons() {
-        if (woof_front_sd_is_a) {
+        if (woof_front_sd_is_a && woof_front_show_notes) {
             let images = this.list.querySelectorAll('.woof-front-builder-sd-btn img');
             let hide = false;
 

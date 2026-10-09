@@ -9,6 +9,7 @@ class WOOF_URL_PARSER {
 	private $current_request = array();
 	private $filter_prefix   = '';
 	public $special_filters  = array();
+	private $parsed_cache    = array();
 
 	public function __construct() {
 
@@ -471,9 +472,18 @@ class WOOF_URL_PARSER {
 
 	public function parse_url_query( $url_query ) {
 
-		$filter_data     = array();
-		$all_filter_data = array();
-		$request_array   = explode( '/', trim( $url_query, '/' ) );
+		// The result depends only on the url and the filter settings, which do not
+		// change within one request, while this method is called hundreds of times
+		// per page (once per get_request_data() call). Cache it per url, but only
+		// after wp_loaded, so a call made before taxonomies and settings are ready
+		// can never freeze an incomplete result.
+		$can_cache = did_action( 'wp_loaded' ) > 0;
+		if ( $can_cache && isset( $this->parsed_cache[ $url_query ] ) ) {
+			return $this->parsed_cache[ $url_query ];
+		}
+
+		$filter_data   = array();
+		$request_array = explode( '/', trim( $url_query, '/' ) );
 
 		if ( $request_array[0] !== $this->get_filter_prefix() ) {
 			return $filter_data;
@@ -481,10 +491,8 @@ class WOOF_URL_PARSER {
 
 		$filter_data[ $this->get_filter_prefix() ] = 1;
 
-		$settings        = woof()->settings;
-		$taxonomies      = woof()->get_taxonomies();
-		$taxonomies_keys = array_keys( $taxonomies );
-		$all_items       = $this->get_all_items();
+		$settings  = woof()->settings;
+		$all_items = $this->get_all_items();
 
 		foreach ( $request_array as $string ) {
 
@@ -494,15 +502,7 @@ class WOOF_URL_PARSER {
 
 				if ( $s_match != $string ) {
 
-					if ( isset( $taxonomies_keys[ $f_real_key ] ) ) {
-						$separator = '-or-';
-						if ( isset( $settings['comparison_logic'][ $f_real_key ] ) and 'AND' == $settings['comparison_logic'][ $f_real_key ] ) {
-							$separator = '-and-';
-						}
-						$separator                  = '-and-';
-						$terms_slug                 = array_map( 'sanitize_title', explode( $separator, $s_match ) );
-						$filter_data[ $f_real_key ] = implode( ',', $terms_slug );
-					} elseif ( $f_key == $string and isset( $this->special_filters[ $f_key ] ) ) {
+					if ( $f_key == $string and isset( $this->special_filters[ $f_key ] ) ) {
 
 						$filter_data = array_merge( $filter_data, $this->special_filters[ $f_key ] );
 					} elseif ( 'price' == $f_key ) {
@@ -515,6 +515,8 @@ class WOOF_URL_PARSER {
 						}
 					} else {
 
+						// Mirror of woof_get_submit_link() in js/url_parser.js: taxonomies,
+						// meta fields and the rest are all encoded the same way there.
 						$needle  = array( '-and-', '-or-', '-to-', '+' );
 						$replase = array( ',', ',', '^', ' ' );
 						$s_match = urldecode( $s_match );
@@ -525,6 +527,10 @@ class WOOF_URL_PARSER {
 					}
 				}
 			}
+		}
+
+		if ( $can_cache ) {
+			$this->parsed_cache[ $url_query ] = $filter_data;
 		}
 
 		return $filter_data;

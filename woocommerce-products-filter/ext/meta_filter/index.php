@@ -94,8 +94,10 @@ final class WOOF_META_FILTER extends WOOF_EXT {
 					continue;
 				}
 
-				if ( $counter++ >= 2 ) {
+				if ( intval( WOOF_VERSION ) === 1 ) {
+					if ( $counter++ >= 2 ) {
 						break;
+					}
 				}
 
 				$this->meta_keys[] = $val['meta_key'];
@@ -117,6 +119,11 @@ final class WOOF_META_FILTER extends WOOF_EXT {
 			return;
 		}
 		$class_name = 'WOOF_META_FILTER_' . strtoupper( $search_view );
+		
+		// The view slug is validated by safe_view_slug() (alphanumeric, dash,
+		// underscore only) and the path is confirmed with is_file() above, so no
+		// user input can traverse or inject into this include.
+		// nosemgrep: php.lang.security.file.inclusion-arg
 		require_once $view_file;
 			
 		if ( class_exists( $class_name ) ) {

@@ -103,7 +103,7 @@ final class WOOF_EXT_STAT extends WOOF_EXT {
 					}
 					if ( $_GET['woof_stat_collection'] === $cron_secret_key ) {
 						$this->assemble_stat();
-						die( 'woof stat assemble done!' );
+						wp_die( 'woof stat assemble done!' );
 					}
 				}
 			} else {

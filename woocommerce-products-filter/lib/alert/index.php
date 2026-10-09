@@ -2,7 +2,10 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'No direct access allowed' );
 }
-
+//from 30-06-2026 works only for free version
+if ( version_compare( WOOF_VERSION, '3.0.0', '>' ) ) {
+	return;
+}
 // ask favour
 add_action(
 	'init',
