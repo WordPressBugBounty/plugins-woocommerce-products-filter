@@ -779,6 +779,9 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
 		if ( ! wp_verify_nonce( WOOF_REQUEST::get( 'woof_front_builder_nonce' ), 'front_builder_nonce' ) ) {// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			return false;
 		}
+		if ( ! $this->is_admin() ) {
+			return false;
+		}
 		$key = sanitize_key( wp_unslash( $_REQUEST['key'] ) );
 		$sd  = WOOF_EXT::$includes['applications']['sd'];
 		/* translators: %s: filter key name */

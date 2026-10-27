@@ -70,7 +70,7 @@ $cron_system = -1; // hide  cron sys
 					<h4><?php esc_html_e( 'Secret key for external cron', 'woocommerce-products-filter' ); ?></h4>
 <?php
 if ( ! isset( $woof_settings['woof_quick_search']['cron_secret_key'] ) or empty( $woof_settings['woof_quick_search']['cron_secret_key'] ) ) {
-	$woof_settings['woof_quick_search']['cron_secret_key'] = 'woof_stat_updating';
+	$woof_settings['woof_quick_search']['cron_secret_key'] = WOOF_HELPER::get_cron_key( 'woof_quick_search' );
 }
 $cron_secret_key = sanitize_title( $woof_settings['woof_quick_search']['cron_secret_key'] );
 ?>

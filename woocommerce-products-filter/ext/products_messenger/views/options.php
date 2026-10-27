@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		$woof_settings[ $key ]['show_btn_subscr'] = 0;
 	}
 	if ( ! isset( $woof_settings[ $key ]['use_external_cron'] ) or empty( $woof_settings[ $key ]['use_external_cron'] ) ) {
-		$woof_settings[ $key ]['use_external_cron'] = bin2hex( random_bytes( 12 ) );
+		$woof_settings[ $key ]['use_external_cron'] = WOOF_HELPER::get_cron_key( $key, 'use_external_cron' );
 	}
 	if ( ! isset( $woof_settings[ $key ]['wp_cron_period'] ) ) {
 		$woof_settings[ $key ]['wp_cron_period'] = 'twicemonthly';

@@ -97,7 +97,6 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 
 		// ajax
 		add_action( 'wp_ajax_woof_turbo_mode_update_file', array( $this, 'ajax_create_data_search_files' ) );
-		add_action( 'wp_ajax_nopriv_woof_turbo_mode_update_file', array( $this, 'ajax_create_data_search_files' ) );
 	}
 
 	public function create_data_search_files_when_init() {
@@ -187,22 +186,56 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 		wp_localize_script( 'woof_turbo_mode', 'woof_tm_data', $text_data );
 	}
 	
-	// Settings for the public woof_tm_data object: everything the turbo mode JS reads,
-	// without server-side data (Statistics DB credentials, cron secret keys)
+	// Settings for the public woof_tm_data object: only the values js/turbo_mode.js reads (an allowlist; the settings
+	// also hold server-side data, which never goes to the front end). A value the JS starts to read must be added here.
 	private function get_public_settings() {
-		$settings = is_array( $this->woof_settings ) ? $this->woof_settings : array();
+		$all      = is_array( $this->woof_settings ) ? $this->woof_settings : array();
+		$settings = array();
 
-		// Statistics config is server-side only (includes the external MySQL credentials)
-		unset( $settings['woof_stat'] );
+		// whole values: per taxonomy logic / counts (the keys of excluded_terms are the filter taxonomies), search slug
+		foreach ( array( 'excluded_terms', 'comparison_logic', 'not_toggled_terms_count', 'swoof_search_slug' ) as $key ) {
+			if ( array_key_exists( $key, $all ) ) {
+				$settings[ $key ] = $all[ $key ];
+			}
+		}
 
-		// Secret keys of external cron links (turbo mode, quick search, etc.)
-		foreach ( $settings as $key => $value ) {
-			if ( is_array( $value ) && isset( $value['cron_secret_key'] ) ) {
-				unset( $settings[ $key ]['cron_secret_key'] );
+		// single options of a settings block
+		$children = array(
+			'by_sku'             => array( 'logic' ),
+			'by_text'            => array( 'search_by_full_word' ),
+			'by_instock'         => array( 'use_for' ),
+			'products_messenger' => array( 'show_btn_subscr' ),
+		);
+
+		// meta filter: the field definitions, and the search options of each meta key's own block
+		if ( isset( $all['meta_filter'] ) && is_array( $all['meta_filter'] ) ) {
+			$settings['meta_filter'] = array();
+			foreach ( $all['meta_filter'] as $meta_key => $field ) {
+				$settings['meta_filter'][ $meta_key ] = is_array( $field ) ? $this->pick_keys( $field, array( 'meta_key', 'search_view', 'options' ) ) : $field;
+				$children[ $meta_key ] = array_merge( isset( $children[ $meta_key ] ) ? $children[ $meta_key ] : array(), array( 'search_logic', 'search_option', 'search_value', 'text_conditional' ) );
+			}
+		} elseif ( array_key_exists( 'meta_filter', $all ) && is_scalar( $all['meta_filter'] ) ) {
+			$settings['meta_filter'] = $all['meta_filter'];
+		}
+
+		foreach ( $children as $block => $keys ) {
+			if ( isset( $all[ $block ] ) && is_array( $all[ $block ] ) ) {
+				$settings[ $block ] = $this->pick_keys( $all[ $block ], $keys );
 			}
 		}
 
 		return apply_filters( 'woof_turbo_mode_public_settings', $settings );
+	}
+
+	// The given keys of an array (those that exist), values unchanged
+	private function pick_keys( $array, $keys ) {
+		$res = array();
+		foreach ( $keys as $key ) {
+			if ( array_key_exists( $key, $array ) ) {
+				$res[ $key ] = $array[ $key ];
+			}
+		}
+		return $res;
 	}
 
 	public function woof_print_applications_tabs() {
@@ -242,6 +275,9 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 		if ( ! isset( $_REQUEST['turbo_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['turbo_nonce'] ) ), 'woof_turbo_nonce' ) ) {
 			die( '0' );
 		}
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			die( '0' );
+		}
 		$this->create_data_search_files();
 	}
 
@@ -272,6 +308,8 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 		$args      = array(
 			'post_type'              => array( 'product', 'product_variation' ),
 			'post_status'            => 'publish',
+			'has_password'           => false, // password protected products (and their variations) are not written to the files
+			'post_parent__not_in'    => $this->get_protected_product_ids(),
 			'tax_query'              => $tax_query,
 			'offset'                 => $start,
 			'posts_per_page'         => $step,
@@ -684,6 +722,21 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 		$this->cron_obj->process();
 	}
 
+	// ids of the password protected products: their variations carry no password of their own
+	private function get_protected_product_ids() {
+		return get_posts(
+			array(
+				'post_type'        => 'product',
+				'post_status'      => 'publish',
+				'has_password'     => true,
+				'fields'           => 'ids',
+				'posts_per_page'   => -1,
+				'suppress_filters' => true,
+				'no_found_rows'    => true,
+			)
+		);
+	}
+
 	public function get_cron_ids( $ids, $id ) {
 
 		$tax_query = array();
@@ -692,6 +745,8 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 		$args      = array(
 			'post_type'              => array( 'product', 'product_variation' ),
 			'post_status'            => 'publish',
+			'has_password'           => false, // password protected products (and their variations) are not written to the files
+			'post_parent__not_in'    => $this->get_protected_product_ids(),
 			'tax_query'              => $tax_query,
 			'posts_per_page'         => -1,
 			// 'posts_per_page' => 12,

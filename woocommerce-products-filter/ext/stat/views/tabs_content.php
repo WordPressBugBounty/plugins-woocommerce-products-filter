@@ -500,7 +500,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<h4><?php esc_html_e( 'Secret key for external cron', 'woocommerce-products-filter' ); ?></h4>
 					<?php
 					if ( ! isset( $woof_settings['woof_stat']['cron_secret_key'] ) or empty( $woof_settings['woof_stat']['cron_secret_key'] ) ) {
-						$woof_settings['woof_stat']['cron_secret_key'] = 'woof_stat_updating';
+						$woof_settings['woof_stat']['cron_secret_key'] = WOOF_HELPER::get_cron_key( 'woof_stat' );
 					}
 					$cron_secret_key = sanitize_title( $woof_settings['woof_stat']['cron_secret_key'] );
 					?>

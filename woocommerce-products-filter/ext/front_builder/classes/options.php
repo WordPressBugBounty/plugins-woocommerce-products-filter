@@ -29,6 +29,9 @@ final class WOOF_FRONT_BUILDER_OPTIONS {
 				if ( ! wp_verify_nonce( WOOF_REQUEST::get( 'woof_front_builder_nonce' ), 'front_builder_nonce' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					return false;
 				}
+				if ( ! $this->is_admin ) {
+					return false;
+				}
 				die( json_encode( $this->get_options( sanitize_text_field( wp_unslash( $_REQUEST['name'] ) ) ) ) );
 			}
 		);

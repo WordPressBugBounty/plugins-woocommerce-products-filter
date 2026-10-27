@@ -84,6 +84,48 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
 		}
 
 		add_action( 'wp_ajax_woof_get_seo_rule_html', array( $this, 'get_seo_rule_html' ) );
+		add_action( 'admin_notices', array( $this, 'invalid_seo_rules_notice' ) );
+	}
+
+	// Rules with a broken regular expression are saved but never match, so the admin is warned about them
+	public function invalid_seo_rules_notice() {
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'wc-settings' !== $page || 'woof' !== $tab || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		if ( empty( $this->woof_settings['woof_url_request']['seo_rules'] ) || ! is_array( $this->woof_settings['woof_url_request']['seo_rules'] ) ) {
+			return;
+		}
+
+		$invalid = array();
+		foreach ( $this->woof_settings['woof_url_request']['seo_rules'] as $rules ) {
+			if ( ! is_array( $rules ) ) {
+				continue;
+			}
+			foreach ( $rules as $rule ) {
+				if ( ! isset( $rule['url'] ) || '' === trim( (string) $rule['url'] ) ) {
+					continue;
+				}
+				if ( ! WOOF_SEO::is_rule_url_valid( $rule['url'] ) ) {
+					$invalid[] = $rule['url'];
+				}
+			}
+		}
+
+		if ( empty( $invalid ) ) {
+			return;
+		}
+		?>
+		<div class="notice notice-warning woof_seo_invalid_rules_notice">
+			<p><?php esc_html_e( 'HUSKY SEO URL request: these rules are saved, but their URL is not a valid regular expression, so they never match:', 'woocommerce-products-filter' ); ?></p>
+			<ul>
+				<?php foreach ( $invalid as $rule_url ) : ?>
+					<li><code><?php echo esc_html( $rule_url ); ?></code></li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+		<?php
 	}
 
 	public function init_js() {
@@ -219,7 +261,10 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
 			</div>
 			<div class='woof_seo_rule_down' >                
 				<a href="#" class="button button-primary woof_seo_rules_move_down woof-button" data-key='<?php echo esc_attr( $ukey ); ?>' title="delete"><span class="dashicons dashicons-arrow-down-alt"></span></a>
-			</div>			
+			</div>
+			<div class='woof_seo_rule_toggle' >
+				<a href="#" class="button woof_seo_rules_toggle woof-button" title="<?php esc_attr_e( 'Collapse / expand', 'woocommerce-products-filter' ); ?>"><span class="dashicons dashicons-arrow-up"></span></a>
+			</div>
 		</li>
 		<?php
 	}
@@ -268,6 +313,8 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
 			$links = explode( PHP_EOL, trim( $this->woof_settings['woof_url_request']['yoast_sitemap'] ) );
 		}
 		foreach ( $links as $l ) {
+			// Each line becomes a URL inside the XML, so validate and escape it
+			$l = esc_xml( esc_url_raw( trim( $l ) ) );
 			if ( ! $l ) {
 				continue;
 			}

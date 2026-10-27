@@ -100,12 +100,35 @@ final class WOOF_EXP_IMP extends WOOF_EXT {
 		}
 
 		try {
-			$options = wc_clean( json_decode( stripcslashes( $_POST['import_value'] ), true ) );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$options = json_decode( wp_unslash( $_POST['import_value'] ), true );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			if ( ! is_array( $options ) ) {
+				die( esc_html__( 'Error! Wrong data format', 'woocommerce-products-filter' ) );
+			}
 
 			foreach ( $options as $option_name => $option_data ) {
-				if ( substr( $option_name, 0, 5 ) === 'woof_' ) {
-					update_option( $option_name, $option_data );
+				$option_name = sanitize_key( $option_name );
+				// Only HUSKY options; the allow-list of custom templates is never imported
+				if ( substr( $option_name, 0, 5 ) !== 'woof_' || 'woof_custom_tpl_allowed' === $option_name ) {
+					continue;
 				}
+
+				if ( 'woof_settings' === $option_name ) {
+					if ( ! is_array( $option_data ) ) {
+						continue;
+					}
+					// Sanitized the same way as on the regular settings saving
+					$option_data = WOOF_HELPER::sanitize_array( $option_data );
+
+					// Arbitrary JS may only be changed by users allowed to post unfiltered HTML
+					if ( ! current_user_can( 'unfiltered_html' ) ) {
+						$stored                            = get_option( 'woof_settings', array() );
+						$option_data['js_after_ajax_done'] = $stored['js_after_ajax_done'] ?? '';
+					}
+				} else {
+					$option_data = wc_clean( $option_data );
+				}
+
+				update_option( $option_name, $option_data );
 			}
 			die( esc_html__( 'Settings imported successfully. Reload the page please.', 'woocommerce-products-filter' ) );
 		} catch ( Exception $e ) {

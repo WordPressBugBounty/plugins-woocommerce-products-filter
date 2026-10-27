@@ -70,7 +70,7 @@ final class WOOF_HELPER {
 
 		// Nested multiline fields matched by their position in the settings tree,
 		// because their key names are too generic to be whitelisted globally.
-		$is_textarea_path = array( '~/seo_rules/[^/]+/[^/]+/description$~' );
+		$is_textarea_path = array( '~/seo_rules/[^/]+/[^/]+/description$~', '~^/woof_settings/mcp/(instructions|server_description|widget_text|allowed_origins|rl_ai_ranges)$~', '~^/mcp/(instructions|server_description|widget_text|allowed_origins|rl_ai_ranges)$~' );
 		$is_html_path     = array( '~/seo_rules/[^/]+/[^/]+/text$~' );
 
 		if ( is_array( $array ) && ! empty( $array ) ) {
@@ -80,8 +80,13 @@ final class WOOF_HELPER {
 					// so without this the nested values were never sanitized.
 					$array[ $key ] = self::sanitize_array( $data, $path . '/' . $key );
 				} else {
+					$raw_key  = $key;
 					$key      = sanitize_text_field( $key );
 					$key_path = $path . '/' . $key;
+					// The value is stored under the sanitized key, so do not leave the raw key with the raw value
+					if ( (string) $raw_key !== $key ) {
+						unset( $array[ $raw_key ] );
+					}
 					if ( in_array( $key, $is_html ) || self::path_matches( $key_path, $is_html_path ) ) {
 						$array[ $key ] = wp_kses_post( wp_unslash( $data ) );
 					} elseif ( in_array( $key, $is_textarea ) || self::path_matches( $key_path, $is_textarea_path ) ) {
@@ -1127,5 +1132,95 @@ final class WOOF_HELPER {
 
 	public static function generate_container_css_classes( $section_key ) {
 		return apply_filters( 'woof_generate_container_css_classes', $section_key );
+	}
+
+	// Secret key of an external cron link: woof_settings[ $section ][ $field ] (Products Messenger: use_external_cron,
+	// Turbo mode / Quick search / Statistics: cron_secret_key). A stored key is returned exactly as it is stored.
+	// Without a stored key a random one is generated; it is stored at once when the settings block exists, otherwise
+	// the settings page that shows it stores it with the next save.
+	// Statistics accepted the fixed default 'woof_stat_updating' while no key was stored and the external cron was
+	// selected. The first call on such a site stores that value as its key (its existing cron link keeps working); no
+	// other site gets the fixed default.
+	public static function get_cron_key( $section, $field = 'cron_secret_key' ) {
+		$settings = get_option( 'woof_settings', array() );
+		if ( ! is_array( $settings ) ) {
+			$settings = array();
+		}
+
+		if ( ! get_option( 'woof_cron_keys_checked', 0 ) ) {
+			update_option( 'woof_cron_keys_checked', 1, false );
+			if ( isset( $settings['woof_stat'] ) && is_array( $settings['woof_stat'] ) && empty( $settings['woof_stat']['cron_secret_key'] ) && isset( $settings['woof_stat']['cron_system'] ) && 1 === intval( $settings['woof_stat']['cron_system'] ) ) {
+				$settings['woof_stat']['cron_secret_key'] = 'woof_stat_updating';
+				self::store_cron_key( $settings, 'woof_stat', 'cron_secret_key' );
+			}
+		}
+
+		if ( isset( $settings[ $section ][ $field ] ) && is_scalar( $settings[ $section ][ $field ] ) && ! empty( $settings[ $section ][ $field ] ) ) {
+			return (string) $settings[ $section ][ $field ];
+		}
+
+		try {
+			$key = bin2hex( random_bytes( 16 ) );
+		} catch ( Exception $e ) {
+			$key = wp_generate_password( 32, false );
+		}
+
+		if ( isset( $settings[ $section ] ) && is_array( $settings[ $section ] ) ) {
+			$settings[ $section ][ $field ] = $key;
+			self::store_cron_key( $settings, $section, $field );
+		}
+
+		return $key;
+	}
+
+	// Saves woof_settings with a new cron key and puts the key into the loaded settings too
+	private static function store_cron_key( $settings, $section, $field ) {
+		update_option( 'woof_settings', $settings );
+		if ( function_exists( 'woof' ) && woof() && is_array( woof()->settings ) && isset( woof()->settings[ $section ] ) && is_array( woof()->settings[ $section ] ) ) {
+			woof()->settings[ $section ][ $field ] = $settings[ $section ][ $field ];
+		}
+	}
+
+	// Compares a cron key from a request with the expected key: byte for byte (hash_equals), without any sanitizing
+	// of the given value that could make two different keys equal; empty and too short values never match
+	public static function cron_key_matches( $expected, $given, $min_length = 1 ) {
+		if ( ! is_scalar( $expected ) || ! is_string( $given ) ) {
+			return false;
+		}
+		$expected = (string) $expected;
+		if ( '' === $expected || '' === $given || strlen( $given ) < max( 1, (int) $min_length ) || strlen( $given ) > 256 ) {
+			return false;
+		}
+		return hash_equals( $expected, $given );
+	}
+
+	// Minimum time between two runs of an external cron job with the given period (seconds): 90% of the period, so a
+	// scheduler that calls a little early is never skipped, at most 90% of one hour (the shortest period the settings
+	// offer), so an owner's schedule is never blocked
+	public static function cron_min_interval( $period ) {
+		$period = (int) $period;
+		if ( $period <= 0 || $period > HOUR_IN_SECONDS ) {
+			$period = HOUR_IN_SECONDS;
+		}
+		return max( 30, (int) floor( $period * 0.9 ) );
+	}
+
+	// true: the external cron job $name may run now (the run time is taken); false: it ran less than $interval seconds
+	// ago, the call must do nothing. Check and update are one UPDATE query, so parallel calls cannot run together.
+	public static function cron_run_allowed( $name, $interval ) {
+		global $wpdb;
+		$interval = (int) apply_filters( 'woof_external_cron_interval', (int) $interval, $name );
+		if ( $interval <= 0 ) {
+			return true;
+		}
+		$option = 'woof_cron_last_' . $name;
+		$now    = time();
+		if ( false === get_option( $option, false ) ) {
+			add_option( $option, '0', '', 'no' );
+		}
+		// a stored time in the future (clock change) does not block either
+		$taken = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND ( CAST( option_value AS UNSIGNED ) <= %d OR CAST( option_value AS UNSIGNED ) > %d )", (string) $now, $option, $now - $interval, $now + $interval ) );
+		wp_cache_delete( $option, 'options' );
+		return 1 === (int) $taken;
 	}
 }

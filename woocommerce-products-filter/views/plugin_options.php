@@ -224,7 +224,6 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 						</a>
 					</li>
 
-
 					<?php
 					if ( ! empty( WOOF_EXT::$includes['applications'] ) ) {
 						foreach ( WOOF_EXT::$includes['applications'] as $obj ) {
@@ -238,6 +237,8 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 						}
 					}
 					?>
+
+					<?php HUSKY_MCP_ADMIN::render_nav(); ?>
 
 					<li>
 						<a href="#tabs-6">
@@ -2032,6 +2033,8 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 				?>
 
 
+
+				<?php HUSKY_MCP_ADMIN::render_tab(); ?>
 
 				<section id="tabs-6">
 

@@ -32,9 +32,40 @@ jQuery(document).ready(function () {
             jQuery('#woof_seo_rules_list').append(section);
             jQuery('.woof_seo_rule_url_add').val("");
             woof_init_seo_rules_scripts();
+            // show the new rule only in the selected language, like the saved ones
+            woof_seo_rules_check_lang();
+            woof_add_seo_rule_lock = false;
+        }).fail(function () {
+            // unlock the button, otherwise it stays blocked after a failed request
             woof_add_seo_rule_lock = false;
         });
 
+    });
+
+    // collapsible rules, all of them are expanded by default; collapsed fields are still submitted
+    jQuery(document).on('click', '.woof_seo_rules_toggle', function () {
+        jQuery(this).closest('.woof_seo_rules_item').toggleClass('woof_seo_rule_collapsed');
+        return false;
+    });
+    jQuery('.woof_seo_rules_open_all').on('click', function () {
+        jQuery('#woof_seo_rules_list .woof_seo_rules_item').removeClass('woof_seo_rule_collapsed');
+        return false;
+    });
+    jQuery('.woof_seo_rules_close_all').on('click', function () {
+        jQuery('#woof_seo_rules_list .woof_seo_rules_item').addClass('woof_seo_rule_collapsed');
+        return false;
+    });
+
+    // remember the opened settings tabs, the page is reloaded after saving
+    jQuery('#mainform').on('submit', function () {
+        var tabs = [];
+        jQuery('.woof-tabs > nav li.tab-current > a').each(function () {
+            tabs.push(jQuery(this).attr('href'));
+        });
+        try {
+            sessionStorage.setItem('woof_settings_tabs', JSON.stringify(tabs));
+        } catch (e) {
+        }
     });
 
     jQuery(".woof_seo_current_lang").on('change', function () {
@@ -43,6 +74,22 @@ jQuery(document).ready(function () {
 
     woof_init_seo_rules_scripts();
     woof_seo_rules_check_lang();
+});
+
+// after saving open the same settings tabs again (outer tabs first, then the nested ones)
+jQuery(window).on('load', function () {
+    var tabs = null;
+    try {
+        tabs = JSON.parse(sessionStorage.getItem('woof_settings_tabs'));
+        sessionStorage.removeItem('woof_settings_tabs');
+    } catch (e) {
+    }
+    if (!Array.isArray(tabs) || window.location.search.indexOf('settings_saved=1') === -1) {
+        return;
+    }
+    tabs.forEach(function (href) {
+        jQuery('.woof-tabs > nav a[href="' + href + '"]').trigger('click');
+    });
 });
 
 function woof_seo_rules_check_lang() {

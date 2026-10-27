@@ -504,15 +504,22 @@ final class WOOF_EXT_BY_TEXT_2 extends WOOF_EXT {
 		if ( ! wp_verify_nonce( WOOF_REQUEST::get( 'woof_text_search_nonce' ), 'text_search_nonce' ) ) {
 			die( 'Stop!' );
 		}
+		// Limit the query on the server: the endpoint is public and is called on every typed letter
+		$limit = intval( WOOF_REQUEST::get( 'auto_res_count' ) );
+		if ( $limit <= 0 ) {
+			$limit = intval( apply_filters( 'woof_text_autocomplete_items', 10 ) );
+		}
+		$limit = max( 1, min( $limit, intval( apply_filters( 'woof_text_autocomplete_max_items', 100 ) ) ) );
+
 		$results = array();
 		$args    = array(
-			'nopaging'      => true,
 			// 'fields' => 'ids',
-			'post_type'     => 'product',
-			'post_status'   => array( 'publish' ),
-			'orderby'       => 'title',
-			'order'         => 'ASC',
-			'max_num_pages' => intval( WOOF_REQUEST::get( 'auto_res_count' ) ) > 0 ? intval( WOOF_REQUEST::get( 'auto_res_count' ) ) : apply_filters( 'woof_text_autocomplete_items', 10 ),
+			'post_type'      => 'product',
+			'post_status'    => array( 'publish' ),
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'posts_per_page' => $limit,
+			'no_found_rows'  => true,
 		);
 
 		if ( class_exists( 'SitePress' ) ) {

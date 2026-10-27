@@ -34,7 +34,8 @@
     border: solid 1px #ddd;
     background: #fefefe;
     margin-bottom: 15px !important;
-    padding-top: 15px;
+    padding-top: 5px;
+    padding-right: 5px;
 }
 
 
@@ -96,10 +97,57 @@
 .woof_seo_rule_up .dashicons-arrow-up-alt, .woof_seo_rule_down .dashicons-arrow-down-alt{
     line-height: 1.6em;
 }
+/* hidden arrow keeps its place, so all rules share the same field width and button columns */
 #woof_seo_rules_list > .woof_seo_rules_item:last-of-type .woof_seo_rule_down{
-    display: none;
+    visibility: hidden;
 }
 
 #woof_seo_rules_list > .woof_seo_rules_item:first-of-type .woof_seo_rule_up{
+    visibility: hidden;
+}
+.woof_seo_rule_toggle{
+    display: inline-block;
+    width: fit-content;
+    vertical-align: top;
+}
+
+.woof_seo_rule_toggle .dashicons{
+    line-height: 1.6em;
+}
+
+/* collapsed rule: only the URL row stays visible, the fields are hidden but still submitted */
+.woof_seo_rules_item.woof_seo_rule_collapsed .woof_seo_rule_container{
     display: none;
+}
+
+.woof_seo_rules_toggle_all{
+    margin: 11px 0;
+}
+
+.woof_seo_rule_collapsed .woof_seo_rules_toggle .dashicons-arrow-up:before{
+    content: "\f140";
+}
+
+/* rule row as flex: action buttons stay at the right edge, also when the rule is collapsed */
+.woof_seo_rules_item{
+    display: flex;
+    align-items: flex-start;
+}
+.woof_seo_rule_url{
+    flex: 0 0 30%;
+    box-sizing: border-box;
+}
+.woof_seo_rule_container{
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    box-sizing: border-box;
+}
+/* delete is always the first visible button, so it pushes the whole group to the right */
+.woof_seo_rule_delete{
+    margin-left: auto;
+}
+/* flex removes the whitespace gap of inline-blocks, restore the 4px spacing between buttons */
+.woof_seo_rule_up, .woof_seo_rule_down, .woof_seo_rule_toggle{
+    margin-left: 4px;
 }

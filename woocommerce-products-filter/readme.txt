@@ -1,11 +1,11 @@
 === HUSKY - Products Filter for WooCommerce Professional ===
 Contributors: RealMag777
 Donate link: https://products-filter.com/downloads
-Tags: filter, product filter, woocommerce, woof, ajax filter
+Tags: filter, woocommerce filter, woocommerce, product filter, ajax filter
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.6
+Stable tag: 1.4.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 6.0
@@ -20,6 +20,8 @@ HUSKY - WooCommerce Products Filter Professional (former name is WOOF) – flexi
 🔗 HUSKY filter enables the generation of search engine optimized [SEO-friendly](https://demo.products-filter.com/swoof/color-red/product_cat-sport/) links, such as: https://demo.products-filter.com/swoof/color-red/product_cat-sport/. These links can be included in your site map file, contributing to improved search engine rankings, particularly on Google.
 
 🛠️ Using [filter front builder](https://demo.products-filter.com/filter-front-builder-demo/) HUSKY allows to create filter forms directly on the site front
+
+🤖 HUSKY has its own [MCP server](https://products-filter.com/mcp-server): your customers can search your shop from Claude, ChatGPT and other AI assistants with the same filters, prices, languages and currencies they see on your site, and get direct links to your product pages. It is read-only, needs no accounts or API keys, and is off until you switch it on in the MCP Server tab
 
 
 ✅ Supports latest version of the WooCommerce plugin. A must have plugin for your WooCommerce powered online store! Maximum flexibility!
@@ -73,6 +75,8 @@ Latest PHP 8.x.x - COMPATIBLE!
 📬&nbsp;[**Products Messenger**](https://products-filter.com/extencion/products-messenger/): allows your logged-in customers subscribe to the products filter combinations and always be informed if in your shop appeared exact products they want to buy. Such tool can grow conversion of the shop. Use it as widget, so as shortcode [woof_products_messenger]
 
 💾&nbsp;[**Saver of Search query**](https://products-filter.com/extencion/saver-of-search-query/): this extension allows for your customers save search combinations and access them in future by one click what makes your customers more informative and attenditive about your shop products
+
+🤖&nbsp;[**MCP server for AI assistants**](https://products-filter.com/mcp-server): a shopper adds your shop address to Claude, ChatGPT, Cursor, VS Code or any other MCP client and asks in plain words, for example "laptops with 16 GB RAM under 800, in stock". The assistant searches your catalog with the filters of your HUSKY form and answers with real products, prices, stock and links. Works with WPML, Polylang and FOX currencies. Read-only and safe: no cart, no checkout, no customer data, drafts and private products are never shown. Built-in rate limits and cache, your own short address (for example your-shop.com/ai-shop), a ready box with connection steps for your pages (shortcode [woof_mcp_connect] or a block), llms.txt and server card so AI agents can find the server
 
 ♾️&nbsp;[**Infinite Scrolling**](https://products-filter.com/make-infinite-scroll-for-filtered-products-also/): allows load and see woocommerce products on the shop and catalog page without click on pagination buttons
 
@@ -162,6 +166,9 @@ R: [Video Tutorials](https://products-filter.com/video/)
 Q: Where can I get the Premium version of HUSKY
 R: [products-filter.com](https://products-filter.com/downloads)
 
+Q: Can my customers search my shop from ChatGPT or Claude?
+R: Yes. Switch on the MCP server in the MCP Server tab of the HUSKY settings and show your customers the server address (the shortcode [woof_mcp_connect] puts a box with the address and connection steps on any page). Details: [MCP Server](https://products-filter.com/mcp-server)
+
 Q: How to create a custom taxomomy?
 R: Use [Custom Post Type UI](https://wordpress.org/plugins/custom-post-type-ui/)
 
@@ -183,6 +190,24 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.7 =
+* New: a read-only MCP server lets AI assistants (Claude, ChatGPT and others) search your shop with your HUSKY filters; it is off by default and is switched on in the MCP Server tab
+* Security fixes. Thanks to ssophiz and nizar yart (D3dC0d) for the responsible disclosure and to Patchstack for coordinating it
+* Performance: text search and SKU search suggestions now load only the configured number of results on the server instead of all matching products
+* Text search: the results-per-page setting above 100 keeps working, and the value is always kept in a valid range
+* SEO rules: rules can be collapsed and expanded, with Open all / Close all buttons
+* SEO rules: a rule with an invalid URL expression is now skipped without PHP warnings, and the settings page shows a notice listing such rules
+* SEO rules: empty rules are skipped instead of matching every page
+* SEO rules: older rules saved without the newer fields open without PHP notices
+* SEO rules: the Add SEO rule button is unlocked again if the request fails
+* SEO rules: a newly added rule is shown only in the selected language right away, like the saved ones
+* Settings: after saving, the page opens on the same tab
+* MCP Server tab: the header has an info button that opens the documentation
+* Yoast sitemap: links added by HUSKY are escaped, so the sitemap stays valid XML
+* Export / Import: imported settings are restored exactly, including line breaks in text fields, and invalid import data now shows an error
+* Fix: the shop page no longer shows an error on the first visit after a fresh install, or with plain permalinks and SEO URLs on
+* Fix: text search in Turbo mode finds products again
 
 = 1.4.6 =
 * Security fix. Thanks to Sawyer for the responsible disclosure and to Wordfence for coordinating it
@@ -579,7 +604,7 @@ Plugin release. Operate all the basic functions.
 
 == License ==
 
-This plugin is copyright pluginus.net &copy; 2012-2026 with [GNU General Public License][] by realmag777.
+This plugin is copyright pluginus.net &copy; 2012-2027 with [GNU General Public License][] by realmag777.
 
 This program is free software; you can redistribute it and/or modify it under the terms of the [GNU General Public License][] as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 

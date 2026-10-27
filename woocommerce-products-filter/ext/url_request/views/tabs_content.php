@@ -184,6 +184,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 									</select>
 								</div>
 
+								<div class="woof_seo_rules_toggle_all">
+									<a href="#" class="button woof_seo_rules_open_all"><?php esc_html_e( 'Open all', 'woocommerce-products-filter' ); ?></a>
+									<a href="#" class="button woof_seo_rules_close_all"><?php esc_html_e( 'Close all', 'woocommerce-products-filter' ); ?></a>
+								</div>
+
 								<ul id='woof_seo_rules_list' >
 									<?php
 									$seo_rules = array();
@@ -198,7 +203,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 										}
 
 										foreach ( $seo_rules as $key => $data ) {
-											$seo_rule->woof_draw_seo_rules_item( $key, $lang, $data['url'], $data['title'], $data['description'], $data['h1'], ( isset( $data['text'] ) ? $data['text'] : '' ) );
+											// rules saved by older versions may not have all the fields
+											$seo_rule->woof_draw_seo_rules_item( $key, $lang, ( isset( $data['url'] ) ? $data['url'] : '' ), ( isset( $data['title'] ) ? $data['title'] : '' ), ( isset( $data['description'] ) ? $data['description'] : '' ), ( isset( $data['h1'] ) ? $data['h1'] : '' ), ( isset( $data['text'] ) ? $data['text'] : '' ) );
 										}
 									}
 									?>

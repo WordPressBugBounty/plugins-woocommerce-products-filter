@@ -7,7 +7,7 @@
 	Tested up to: 7.1
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.6
+	Version: 1.4.7
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
@@ -108,7 +108,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.6' );
+define( 'WOOF_VERSION', '1.4.7' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -125,8 +125,11 @@ require WOOF_PATH . 'classes/widgets.php';
 require WOOF_PATH . 'lib/alert/index.php';
 // ***
 require WOOF_PATH . 'installer/first_settings.php';
+// public read-only MCP server, off until the owner switches it on
+require WOOF_PATH . 'classes/mcp/boot.php';
+HUSKY_MCP::init();
 
-// 09-10-2026
+// 27-10-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -146,6 +149,8 @@ final class HUSKY {
 	public $storage                  = null;
 	public $storage_type             = 'transient'; // session, transient
 	public $show_notes               = true;
+	// true while the MCP server runs the shop page's query (classes/mcp/engine.php)
+	public static $mcp_front_query   = false;
 
 	public function __construct() {
 		global $wpdb;
@@ -180,14 +185,29 @@ final class HUSKY {
 		add_action( 'admin_footer', array( $this, 'add_shortcode_generator' ) );
 	}
 
+	/**
+	 * Whether this is a REST API request, where HUSKY keeps its hands off
+	 * product queries. Not while the MCP server runs the shop page's own
+	 * query inside its API request: that query must get every hook a visit
+	 * to the shop page gets.
+	 */
+	public function is_rest_request() {
+
+		if ( self::$mcp_front_query ) {
+			return false;
+		}
+
+		return ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
+			( isset( $_SERVER['REQUEST_URI'] ) && false !== strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/wp-json/' ) );
+	}
+
 	public function init() {
 
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			return;
 		}
 		
-		if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
-			( isset( $_SERVER['REQUEST_URI'] ) && false !== strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/wp-json/' ) ) ) {
+		if ( $this->is_rest_request() && ! HUSKY_MCP::is_mcp_request() ) {
 			return;
 	    }
 		
@@ -485,6 +505,9 @@ final class HUSKY {
 				}
 
 				update_option( 'woof_settings', $data['woof_settings'] );
+
+				// after-save work of parts with their own needs (MCP: rewrite rules)
+				do_action( 'woof_settings_saved', $data['woof_settings'] );
 			}
 			
 			wp_cache_flush();
@@ -787,8 +810,7 @@ final class HUSKY {
 	}
 
 	public function woocommerce_product_query( $q ) {
-		if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
-			( isset( $_SERVER['REQUEST_URI'] ) && false !== strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/wp-json/' ) ) ) {
+		if ( $this->is_rest_request() ) {
 			return $q;
 	    }
 
@@ -809,8 +831,7 @@ final class HUSKY {
 	}
 
 	function woocommerce_parse_query( $q ) {
-		if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
-			( isset( $_SERVER['REQUEST_URI'] ) && false !== strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/wp-json/' ) ) ) {
+		if ( $this->is_rest_request() ) {
 			return $q;
 	    }
 		
@@ -826,8 +847,7 @@ final class HUSKY {
 	}
 
 	public function parse_query( $wp_query ) {
-		if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
-			( isset( $_SERVER['REQUEST_URI'] ) && false !== strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/wp-json/' ) ) ) {
+		if ( $this->is_rest_request() ) {
 			return $wp_query;
 	    }
 
@@ -1042,7 +1062,9 @@ final class HUSKY {
 					$this->set_really_current_term( $queried_obj );
 				}
 			} elseif ( $seo_url_enabled && ! isset( $request_data['really_curr_tax'] )
-					   && isset( WOOF_EXT::$includes['applications']['url_request'] ) ) {
+					   && isset( WOOF_EXT::$includes['applications']['url_request'] )
+					   // no URL parser with plain permalinks, or on the request that stored the first settings
+					   && ! empty( WOOF_EXT::$includes['applications']['url_request']->url_parser ) ) {
 				// Fallback: queried object is not WP_Term but SEO URL may hide the taxonomy context
 				$url_ext     = WOOF_EXT::$includes['applications']['url_request'];
 				$cleared_url = $url_ext->url_parser->get_cleared_url( $url_ext->url_parser->get_request_uri() );
@@ -2811,6 +2833,8 @@ final class HUSKY {
 		if (WOOF_REQUEST::isset('link')) {
 			$link = wp_parse_url(WOOF_REQUEST::get('link'), PHP_URL_QUERY);
 			$query_array = WOOF_HELPER::safe_parse_str($link);
+			//the link is the visitor's URL, page elements must not be redrawn from it; legitimate values come via the filter below
+			unset($query_array['woof_redraw_elements']);
 			$_GET = apply_filters('woof_draw_products_get_args', wc_clean(array_merge($query_array, wc_clean($_GET))), WOOF_REQUEST::get('link'));
 			}
 
@@ -3530,6 +3554,11 @@ final class HUSKY {
 		//https://pluginus.net/support/topic/woof_disable_filter-doesn-t-disable-filter/
 		if (apply_filters('woof_disable_filter', false)) {
 			return false;
+		}
+
+		//the MCP endpoint needs the filter whatever "init only on" says
+		if (HUSKY_MCP::is_mcp_request()) {
+			return true;
 		}
 
 		//+++

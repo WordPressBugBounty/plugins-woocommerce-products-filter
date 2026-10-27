@@ -124,17 +124,23 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 	}
 
 	public function woof_external_cron_init() {
-		// check secret key  ( min  16 symbol )
-		if ( ! isset( $_GET['woof_pm_cron_key'] ) or empty( $_GET['woof_pm_cron_key'] ) or strlen( sanitize_text_field( wp_unslash( $_GET['woof_pm_cron_key'] ) ) ) < 16 ) {
+		if ( ! isset( $_GET['woof_pm_cron_key'] ) || ! is_string( $_GET['woof_pm_cron_key'] ) ) {
 			return false;
 		}
 
-		$sanitazed_key = esc_attr( sanitize_key( $_GET['woof_pm_cron_key'] ) );
-		if ( $sanitazed_key and isset( woof()->settings['products_messenger']['use_external_cron'] ) and woof()->settings['products_messenger']['use_external_cron'] === $sanitazed_key ) {
-			$this->woof_do_mesenger_action();
-		} else {
+		// check secret key (min 16 symbols), compared as given with the stored key
+		$given_key = wp_unslash( $_GET['woof_pm_cron_key'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only compared with hash_equals(), never output or stored
+		if ( ! WOOF_HELPER::cron_key_matches( WOOF_HELPER::get_cron_key( 'products_messenger', 'use_external_cron' ), $given_key, 16 ) ) {
 			return false;
 		}
+
+		// At most one run per minimum interval (from the sending period, at most one hour). A call inside it does
+		// nothing and loses nothing: the next run sends everything new, each subscription keeps the ids already sent.
+		if ( ! WOOF_HELPER::cron_run_allowed( 'products_messenger', WOOF_HELPER::cron_min_interval( $this->wp_cron_period ) ) ) {
+			return false;
+		}
+
+		$this->woof_do_mesenger_action();
 	}
 
 	public function woof_do_mesenger_action() {

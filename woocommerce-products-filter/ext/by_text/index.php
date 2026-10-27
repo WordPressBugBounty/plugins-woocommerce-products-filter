@@ -669,7 +669,9 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 			$sql = $this->create_where_query( $search_terms );
 
 			if ( $sql ) {
-				$where .= ' AND ' . $sql;
+				// password protected products are not searchable by their text
+				global $wpdb;
+				$where .= ' AND ' . $sql . " AND {$wpdb->posts}.post_password = ''";
 			}
 		}
 		return $where;
@@ -920,6 +922,7 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 			'fields'         => 'ids',
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
+			'has_password'   => false, // the text of a password protected product is not searchable
 			'tax_query'      => $tax_query,
 			'posts_per_page' => -1,
 		);
@@ -969,6 +972,69 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 		return $products;
 	}
 
+	// Meta keys of $requested (comma separated) that the admin allowed: the "custom fields" setting of this
+	// extension and the meta keys added in the Meta Data tab. Anything else is dropped.
+	private function allowed_custom_fields( $requested ) {
+		$allowed = array();
+
+		$saved = isset( woof()->settings[ $this->html_type ]['custom_fields'] ) ? woof()->settings[ $this->html_type ]['custom_fields'] : '';
+		if ( is_string( $saved ) && '' !== trim( $saved ) ) {
+			$allowed = array_map( 'trim', explode( ',', $saved ) );
+		}
+
+		if ( isset( woof()->settings['meta_filter'] ) && is_array( woof()->settings['meta_filter'] ) ) {
+			foreach ( woof()->settings['meta_filter'] as $key => $item ) {
+				$allowed[] = (string) $key;
+				if ( is_array( $item ) && isset( $item['meta_key'] ) && is_string( $item['meta_key'] ) ) {
+					$allowed[] = trim( $item['meta_key'] );
+				}
+			}
+		}
+
+		$res = array();
+		if ( is_string( $requested ) && '' !== trim( $requested ) ) {
+			foreach ( array_map( 'trim', explode( ',', $requested ) ) as $key ) {
+				if ( '' !== $key && in_array( $key, $allowed, true ) ) {
+					$res[] = $key;
+				}
+			}
+		}
+
+		return implode( ',', array_unique( $res ) );
+	}
+
+	// Post fields a "behavior" searches in (the same mapping as create_where_query())
+	private function behavior_fields( $behavior ) {
+		switch ( $behavior ) {
+			case 'content':
+				return array( 'post_content' );
+			case 'excerpt':
+				return array( 'post_excerpt' );
+			case 'content_or_excerpt':
+				return array( 'post_excerpt', 'post_content' );
+			case 'title_or_content_or_excerpt':
+				return array( 'post_title', 'post_excerpt', 'post_content' );
+			case 'title_or_content':
+				return array( 'post_title', 'post_content' );
+		}
+
+		return array( 'post_title' );
+	}
+
+	// The behavior of a request is used only when it searches in fields the setting's behavior searches in too,
+	// otherwise the setting's behavior is used
+	private function allowed_behavior( $requested, $saved ) {
+		if ( ! is_string( $requested ) || ! is_string( $saved ) ) {
+			return $saved;
+		}
+
+		if ( array_diff( $this->behavior_fields( $requested ), $this->behavior_fields( $saved ) ) ) {
+			return $saved;
+		}
+
+		return $requested;
+	}
+
 	// ajax
 	public function ajax_search() {
 		if ( ! wp_verify_nonce( WOOF_REQUEST::get( 'woof_text_search_nonce' ), 'text_search_nonce' ) ) {
@@ -989,6 +1055,15 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 		$search_text   = sanitize_text_field( WOOF_REQUEST::get( 'value' ) );
 		$this->options = array_merge( $this->options, $this->data_fields( WOOF_REQUEST::get() ) ); // sanitizing is inside
 
+		// The endpoint is public: a request may narrow the search the admin allowed in the settings, never widen it
+		$saved = $this->data_fields(); // settings only
+		foreach ( array( 'sku_compatibility', 'taxonomy_compatibility', 'search_desc_variant' ) as $flag ) {
+			$this->options[ $flag ] = ( ! empty( $saved[ $flag ] ) && ! empty( $this->options[ $flag ] ) ) ? 1 : 0;
+		}
+		$this->options['min_symbols']  = max( 1, intval( $this->options['min_symbols'] ), intval( $saved['min_symbols'] ) );
+		$this->options['custom_fields'] = $this->allowed_custom_fields( $this->options['custom_fields'] );
+		$this->options['behavior']      = $this->allowed_behavior( $this->options['behavior'], $saved['behavior'] );
+
 		if ( ! isset( $this->options['page'] ) || ! $this->options['page'] ) {
 			$this->options['page'] = 0;
 		}
@@ -1001,6 +1076,12 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 		if ( $this->options['max_posts'] < 0 ) {
 			$this->options['max_posts'] = 10;
 		}
+		// The endpoint is public: keep max_posts in a sane range (0 would also divide by zero below).
+		// The upper limit is the filter value or the admin setting, whichever is higher,
+		// so settings above 100 keep working.
+		$woof_saved_max             = isset( woof()->settings[ $this->html_type ]['max_posts'] ) ? intval( woof()->settings[ $this->html_type ]['max_posts'] ) : 10;
+		$woof_max_limit             = max( intval( apply_filters( 'woof_text_search_max_posts', 100 ) ), $woof_saved_max );
+		$this->options['max_posts'] = max( 1, min( intval( $this->options['max_posts'] ), $woof_max_limit ) );
 		// +++
 
 		$cache_key = null;

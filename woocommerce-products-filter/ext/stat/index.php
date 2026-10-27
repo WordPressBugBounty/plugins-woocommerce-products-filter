@@ -96,12 +96,18 @@ final class WOOF_EXT_STAT extends WOOF_EXT {
 			// ***
 			if ( $this->cron_system === 1 ) {
 				$this->woof_stat_wpcron_init( true );
-				if ( isset( $_GET['woof_stat_collection'] ) ) {
-					$cron_secret_key = 'woof_stat_updating';
-					if ( isset( $this->woof_settings['woof_stat']['cron_secret_key'] ) and ! empty( $this->woof_settings['woof_stat']['cron_secret_key'] ) ) {
-						$cron_secret_key = sanitize_title( $this->woof_settings['woof_stat']['cron_secret_key'] );
-					}
-					if ( $_GET['woof_stat_collection'] === $cron_secret_key ) {
+				if ( isset( $_GET['woof_stat_collection'] ) && is_string( $_GET['woof_stat_collection'] ) ) {
+					// the link carries the key in its sanitize_title() form, as the settings page shows and saves it
+					$cron_secret_key = sanitize_title( WOOF_HELPER::get_cron_key( 'woof_stat' ) );
+					$given_key       = wp_unslash( $_GET['woof_stat_collection'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only compared with hash_equals(), never output or stored
+					if ( WOOF_HELPER::cron_key_matches( $cron_secret_key, $given_key ) ) {
+						// At most one run per minimum interval (at most one hour); a call inside it does nothing and
+						// loses nothing: the next run assembles all rows collected meanwhile
+						$schedules = $this->get_woof_cron_schedules();
+						$period    = isset( $schedules[ $this->wp_cron_period ] ) ? $schedules[ $this->wp_cron_period ] : 0;
+						if ( ! WOOF_HELPER::cron_run_allowed( 'stat', WOOF_HELPER::cron_min_interval( $period ) ) ) {
+							wp_die( 'woof stat assemble skipped: the previous run was too recent' );
+						}
 						$this->assemble_stat();
 						wp_die( 'woof stat assemble done!' );
 					}

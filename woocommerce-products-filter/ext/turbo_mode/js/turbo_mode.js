@@ -813,13 +813,14 @@ var WoofTurboMode_obj = function (data) {
                 var text_array = data.split(' ');
                 var text_query = [];
 
-                if (settings['search_by_full_word']) {
+                // saved as "0"/"1" (or missing): whole words only with "1", otherwise a part of the title, as the normal mode
+                if (parseInt(settings['search_by_full_word'], 10) === 1) {
                     jQuery.each(text_array, function (i, item) {
-                        text_query.push(" title LIKE '%" + item + "%' ");
+                        text_query.push(" woof_tm_full_word(title,'" + item + "')=true ");
                     });
                 } else {
                     jQuery.each(text_array, function (i, item) {
-                        text_query.push(" title ='" + item + "' ");
+                        text_query.push(" title LIKE '%" + item + "%' ");
                     });
                 }
                 query = ' (' + text_query.join(' OR ') + ') ';
@@ -942,6 +943,11 @@ var WoofTurboMode_obj = function (data) {
         }
         show = false;
         return show;
+    };
+    /* whole word in a title, case-insensitive, as RLIKE '[[:<:]]word[[:>:]]' of the normal mode */
+    alasql.fn.woof_tm_full_word = function (title, word) {
+        word = String(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp('(^|[^\\p{L}\\p{N}_])' + word + '($|[^\\p{L}\\p{N}_])', 'iu').test(String(title));
     };
 
     this.search = function (query, recount) {

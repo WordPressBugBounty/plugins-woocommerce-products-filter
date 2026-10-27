@@ -70,10 +70,21 @@ class WOOF_SEO {
 		}
 		foreach ( $rules as $key => $rule_data ) {
 			if ( isset( $rule_data['url'] ) ) {
+				// An empty rule would match every page
+				if ( '' === trim( (string) $rule_data['url'] ) ) {
+					continue;
+				}
 				$needle  = array( '{any}', '/', 'end' );
 				$replase = array( '.*', '\/', '$' );
 				$url     = str_replace( $needle, $replase, $rule_data['url'] );
-				preg_match( '/' . $url . '/', $current_url, $matches );
+				// preg_match() raises a warning on a broken expression before returning false,
+				// so the warning is caught here and the broken rule is skipped instead of logging it on every page
+				set_error_handler( '__return_true' );
+				$found = preg_match( '/' . $url . '/', $current_url, $matches );
+				restore_error_handler();
+				if ( false === $found ) {
+					continue;
+				}
 				if ( $matches ) {
 					$this->current_rule = $rule_data;
 					break;
@@ -82,6 +93,18 @@ class WOOF_SEO {
 		}
 
 		return $this->current_rule;
+	}
+
+	// Whether the rule URL gives a valid regular expression after the same replacements as in check_search_rules()
+	public static function is_rule_url_valid( $rule_url ) {
+		$needle  = array( '{any}', '/', 'end' );
+		$replase = array( '.*', '\/', '$' );
+		$url     = str_replace( $needle, $replase, (string) $rule_url );
+		set_error_handler( '__return_true' );
+		$found = preg_match( '/' . $url . '/', '' );
+		restore_error_handler();
+
+		return false !== $found;
 	}
 
 	public function is_search_going() {
