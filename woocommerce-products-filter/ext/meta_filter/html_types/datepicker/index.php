@@ -94,7 +94,7 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
 			if ( $from != 'i' ) {
 				$from = $curr_range[0];
 				if ( $type == 'DATE' ) {
-					$from = gmdate( 'Y-M-D', $from );
+					$from = gmdate( 'Y-M-D', (int) $from );
 					$to   = gmdate( 'Y-M-D', 5396281199 );
 				}
 			}
@@ -103,7 +103,7 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
 				$to = $curr_range[1];
 				if ( $type == 'DATE' ) {
 					$from = gmdate( 'Y-M-D', 0 );
-					$to   = gmdate( 'Y-M-D', $to );
+					$to   = gmdate( 'Y-M-D', (int) $to );
 				}
 			}
 
@@ -179,12 +179,12 @@ class WOOF_META_FILTER_DATEPICKER extends WOOF_META_FILTER_TYPE {
 			if ( $arr_val[0] and $arr_val[0] != 'i' ) {
 				$value_txt .= ' ';
 				/* translators: %s: date value */
-				$value_txt .= sprintf( esc_html__( 'from: %s', 'woocommerce-products-filter' ), gmdate( $format, $arr_val[0] ) );
+				$value_txt .= sprintf( esc_html__( 'from: %s', 'woocommerce-products-filter' ), gmdate( $format, (int) $arr_val[0] ) );
 			}
 			if ( $arr_val[1] and $arr_val[1] != 'i' ) {
 				$value_txt .= ' ';
 				/* translators: %s: date value */
-				$value_txt .= sprintf( esc_html__( 'to: %s', 'woocommerce-products-filter' ), gmdate( $format, $arr_val[1] ) );
+				$value_txt .= sprintf( esc_html__( 'to: %s', 'woocommerce-products-filter' ), gmdate( $format, (int) $arr_val[1] ) );
 			}
 		}
 

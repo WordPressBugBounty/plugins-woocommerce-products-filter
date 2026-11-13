@@ -27,11 +27,19 @@ class WOOF_REQUEST {
 
 		if ( $key2 ) {
 			if ( self::isset( $key ) ) {
+				// Objects never come from HTTP input, only from set(); unslashing would modify them in place
+				if ( isset( $_REQUEST[ $key ][ $key2 ] ) && is_object( $_REQUEST[ $key ][ $key2 ] ) ) {
+					return $_REQUEST[ $key ][ $key2 ];
+				}
 				return isset( $_REQUEST[ $key ][ $key2 ] ) ? self::sanitize( wp_unslash( $_REQUEST[ $key ][ $key2 ] ) ) : '';// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			}
 		}
 
 		if ( self::isset( $key ) ) {
+			// Objects never come from HTTP input, only from set(); unslashing would strip the escaping from a stored WP_Query SQL
+			if ( is_object( $_REQUEST[ $key ] ) ) {
+				return $_REQUEST[ $key ];
+			}
 			return self::sanitize( wp_unslash( $_REQUEST[ $key ] ) );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 

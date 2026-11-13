@@ -2927,14 +2927,11 @@ msgstr "ohne Update"
 msgid "xxx"
 msgstr "xxx"
 
-msgid "Сlear"
-msgstr "Bereinigen"
-
-msgid "Сonditionals"
+msgid "Conditionals"
 msgstr "Bedingungen"
 
-msgid "Сontainer size"
+msgid "Container size"
 msgstr "Container-Größe"
 
-msgid "Сount is max"
+msgid "Count is max"
 msgstr "Anzahl ist max"

@@ -1,17 +1,17 @@
-=== HUSKY - Products Filter for WooCommerce Professional ===
+=== HUSKY - Products Filter for WooCommerce Professional. MCP is onboard ===
 Contributors: RealMag777
 Donate link: https://products-filter.com/downloads
 Tags: filter, woocommerce filter, woocommerce, product filter, ajax filter
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.7
+Stable tag: 1.4.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 6.0
-WC tested up to: 11.2
+WC tested up to: 11.3
 
-HUSKY - WooCommerce Products Filter Professional (former name is WOOF) – flexible, easy and robust professional filter for products for WooCommerce
+HUSKY - WooCommerce Products Filter (former WOOF) – filter by categories, attributes, price and meta fields, with a built-in MCP server
 
 == Description ==
 
@@ -190,6 +190,25 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.8 =
+* Security fix. Thanks to Askar (Patchstack)
+* Security fix. Thanks to Kuba (Wordfence)
+* New: text search with the SKU option enabled now also finds products by the SKU of their variations
+* Declared compatibility with the WooCommerce Cart and Checkout blocks
+* Fixed: the [products_woof] shortcode and the other *_woof product shortcodes ignored attributes such as limit and paginate; they now work like the WooCommerce shortcodes, also after AJAX filtering and on the next pages
+* Fixed: AJAX pagination links now point to the real page address, so they also work when opened in a new tab
+* Fixed: PHP warning "Undefined array key 1" when the taxonomies attribute of the [woof] or [woof_products] shortcode contains a part without term IDs (for example product_cat or a trailing +); such parts are now skipped
+* Fixed: PHP warnings in Turbo Mode when the taxonomies attribute contains a part without term IDs
+* Fixed: database error "Table woof_front_builder doesn't exist" on the settings page of sites that never used Front Builder; the table is now created automatically
+* Fixed: fatal error on shop pages when a filter parameter in the URL is passed as an array
+* Fixed: fatal error when a date filter value in the page address has an unexpected format
+* Fixed: fatal error in Quick Search with the extended filter and meta fields enabled
+* Fixed: Quick Search: empty id attributes of checkbox fields
+* Fixed: Products Messenger subscriptions to a text search, including words with an apostrophe, now send notifications
+* Fixed: double quotes in the "JavaScript code after AJAX is done" setting are no longer replaced with single quotes
+* Fixed: PHP 8.5 deprecation notices in the Color and Step Filter extensions
+* Fixed: CSS parser warnings (empty declarations) in front.css and Quick Search styles
 
 = 1.4.7 =
 * New: a read-only MCP server lets AI assistants (Claude, ChatGPT and others) search your shop with your HUSKY filters; it is off by default and is switched on in the MCP Server tab

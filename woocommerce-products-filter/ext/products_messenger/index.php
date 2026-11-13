@@ -116,7 +116,7 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 		$text      = '';
 		if ( $subscr[ $sanit_get['key'] ]['secret_key'] == $sanit_get['woof_skey'] ) {
 			unset( $subscr[ $sanit_get['key'] ] );
-			update_user_meta( $sanit_get['id_user'], $this->user_meta_key, $subscr );
+			update_user_meta( $sanit_get['id_user'], $this->user_meta_key, wp_slash( $subscr ) );
 		}
 		$data['text'] = esc_html__( 'You are unsubscribed from the future products newsletters.', 'woocommerce-products-filter' );
 		woof()->render_html_e( $this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'unsubscr_template.php', $data );
@@ -162,19 +162,20 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 				$data_email             = array();
 				$data_email['products'] = array();
 
-				$safe_request = trim( $data_subscr['request'] );
-				// Validate: must be a SELECT-only query with no stacked queries or dangerous statements.
-				if ( stripos( $safe_request, 'SELECT' ) !== 0 ) {
+				// Same validation as on subscribe, so subscriptions stored before this check are filtered too
+				$safe_request = $this->sanitazed_sql_query( trim( $this->restore_percent_signs( $data_subscr['request'] ) ) );
+				if ( ! $safe_request ) {
 					continue;
 				}
-				// Remove anything after a semicolon to prevent stacked queries.
-				$safe_request = preg_replace( '/;.*$/s', '', $safe_request );
-				// Reject if dangerous DML/DDL keywords are present.
-				if ( preg_match( '/\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|REPLACE|EXEC|CALL)\b/i', $safe_request ) ) {
-					continue;
-				}
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $safe_request is WP_Query-generated SQL stored in user meta, validated above to be SELECT-only with no dangerous statements.
+				// Older versions lost the backslash before an apostrophe of the search text, such a query can not
+				// be restored and the database rejects it: skip the subscription without an error on every run
+				$suppress_errors = $wpdb->suppress_errors( true );
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $safe_request is WP_Query-generated SQL stored in user meta, validated by sanitazed_sql_query() above.
 				$products = $wpdb->get_results( $safe_request );
+				$wpdb->suppress_errors( $suppress_errors );
+				if ( '' !== $wpdb->last_error ) {
+					continue;
+				}
 
 				foreach ( $products as $p ) {      // if it has new products
 					if ( ! in_array( $p->ID, $data_subscr['product_ids'] ) ) {
@@ -212,7 +213,7 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 					// safe all info. If the wp_email does not work, the data is not updated
 
 					if ( $successful_sending ) {
-						update_user_meta( $user->ID, $this->user_meta_key, $data_user );
+						update_user_meta( $user->ID, $this->user_meta_key, wp_slash( $data_user ) );
 					}
 				}
 			}
@@ -311,7 +312,7 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 		$data['get']        = $this->woof_get_html_terms( $this->sanitaz_array_r( isset( $_POST['get_var'] ) ? wp_unslash( $_POST['get_var'] ) : array() ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$subscr          = get_user_meta( $data['user_id'], $this->user_meta_key, true );
-		$data['request'] = $this->sanitazed_sql_query( base64_decode( woof()->storage->get_val( 'woof_pm_request_' . $data['user_id'] ) ) );
+		$data['request'] = $this->sanitazed_sql_query( $this->restore_percent_signs( base64_decode( woof()->storage->get_val( 'woof_pm_request_' . $data['user_id'] ) ) ) );
 		// If the request has banned operators or is empty
 		if ( ! $data['request'] or empty( $data['request'] ) ) {
 			wp_die( 'Invalid request', 403 );
@@ -326,7 +327,7 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 			$subscr = array();
 		}
 		if ( count( $subscr ) >= $this->subscr_count ) {
-			die( '<li class="woof_pm_max_count" >' . esc_html__( 'Сount is max', 'woocommerce-products-filter' ) . '</li>' ); // Check limit count on backend
+			die( '<li class="woof_pm_max_count" >' . esc_html__( 'Count is max', 'woocommerce-products-filter' ) . '</li>' ); // Check limit count on backend
 		}
 		// +++
 		$data['subscr_lang'] = apply_filters( 'woof_subscribe_lang', $this->subscribe_lang ); // Text of  the subscriptions
@@ -348,7 +349,7 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 		}
 
 		$subscr[ $key ] = $data;
-		update_user_meta( $data['user_id'], $this->user_meta_key, $subscr );
+		update_user_meta( $data['user_id'], $this->user_meta_key, wp_slash( $subscr ) ); // the stored SQL must keep its backslashes
 		$data['ext_link'] = $this->get_ext_link();
 		// for Ajax redraw
 		$cont = woof()->render_html( $this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'item_list_subscr.php', $data );
@@ -374,7 +375,7 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 		$key    = sanitize_key( $_POST['key'] );
 		$subscr = get_user_meta( $user_id, $this->user_meta_key, true );
 		unset( $subscr[ $key ] );
-		update_user_meta( $user_id, $this->user_meta_key, $subscr );
+		update_user_meta( $user_id, $this->user_meta_key, wp_slash( $subscr ) );
 		$arg = array( 'key' => $key );
 		die( json_encode( $arg ) );
 	}
@@ -522,7 +523,15 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 		return woof()->render_html( $this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'shortcodes' . DIRECTORY_SEPARATOR . 'woof_products_messenger.php', $data );
 	}
 
+	// WordPress writes % in LIKE as a placeholder of the request the query was built in, so a saved query
+	// can hold a placeholder of an older request. Query Save stores to the same key without removing it.
+	private function restore_percent_signs( $sql ) {
+		return preg_replace( '/\{[0-9a-f]{64}\}/', '%', (string) $sql );
+	}
+
 	public function sanitazed_sql_query( $sql ) {
+		global $wpdb;
+		$sql = (string) $sql;
 		// Must start with SELECT.
 		if ( stripos( trim( $sql ), 'SELECT' ) !== 0 ) {
 			return false;
@@ -533,6 +542,19 @@ final class WOOF_EXT_PRODS_MESSENGER extends WOOF_EXT {
 		$dangerous = array( 'TRUNCATE', 'DELETE', 'UPDATE', 'INSERT', 'REPLACE', 'CREATE', 'DROP', 'ALTER', 'EXEC', 'CALL' );
 		foreach ( $dangerous as $operator ) {
 			if ( preg_match( '/\b' . $operator . '\b/i', $sql ) ) {
+				return false;
+			}
+		}
+		// Check the query structure with quoted strings and identifiers blanked out,
+		// so a customer search text like "union jack" or "sleep mask" can never trigger these checks
+		$structure = preg_replace( '/\'(?:[^\'\\\\]|\\\\.|\'\')*\'|"(?:[^"\\\\]|\\\\.|"")*"|`(?:[^`]|``)*`/s', "''", $sql );
+		// A product WP_Query never contains comments, UNION, timing or file functions, or system tables
+		if ( preg_match( '~/\*|#|--|\bUNION\b|\b(SLEEP|BENCHMARK|GET_LOCK|LOAD_FILE)\s*\(|\bINTO\s+(OUTFILE|DUMPFILE)\b|\binformation_schema\b~i', $structure ) ) {
+			return false;
+		}
+		// A product query never reads the users tables
+		foreach ( array( $wpdb->users, $wpdb->usermeta ) as $table ) {
+			if ( preg_match( '/\b' . preg_quote( $table, '/' ) . '\b/i', $structure ) ) {
 				return false;
 			}
 		}

@@ -7,14 +7,14 @@
 	Tested up to: 7.1
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.7
+	Version: 1.4.8
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
 	Domain Path: /languages
 	Forum URI: https://pluginus.net/support/forum/woof-woocommerce-products-filter/
 	WC requires at least: 6.0
-	WC tested up to: 11.2
+	WC tested up to: 11.3
 	Requires Plugins: woocommerce
 	License: GPL-2.0-or-later
 	License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -34,6 +34,8 @@ add_action(
 	function () {
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+			// HUSKY does not touch the cart or checkout, so the block-based Cart and Checkout are fully compatible
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
 		}
 	}
 );
@@ -108,7 +110,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.7' );
+define( 'WOOF_VERSION', '1.4.8' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -129,7 +131,7 @@ require WOOF_PATH . 'installer/first_settings.php';
 require WOOF_PATH . 'classes/mcp/boot.php';
 HUSKY_MCP::init();
 
-// 27-10-2026
+// 09-11-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -149,6 +151,7 @@ final class HUSKY {
 	public $storage                  = null;
 	public $storage_type             = 'transient'; // session, transient
 	public $show_notes               = true;
+	private $ajax_pagination_base    = ''; // the visitor's page while the pager is rendered in woof_draw_products()
 	// true while the MCP server runs the shop page's query (classes/mcp/engine.php)
 	public static $mcp_front_query   = false;
 
@@ -394,7 +397,11 @@ final class HUSKY {
 
 		// ***
 
-		$data = WOOF_HELPER::sanitize_array( json_decode( WOOF_REQUEST::get( 'formdata' ), true ) );
+		$data = json_decode( WOOF_REQUEST::get( 'formdata' ), true );
+		if ( isset( $data['woof_settings']['js_after_ajax_done'] ) and is_string( $data['woof_settings']['js_after_ajax_done'] ) ) {
+			$data['woof_settings']['js_after_ajax_done'] = WOOF_HELPER::encode_js_setting( $data['woof_settings']['js_after_ajax_done'] );
+		}
+		$data = WOOF_HELPER::sanitize_array( $data );
 
 		if ( isset( $data['woof_settings'] ) ) {
 			if ( ! isset( $data['_wpnonce_woof'] ) || ! wp_verify_nonce( $data['_wpnonce_woof'], 'woof_save_option' ) ) {
@@ -1155,7 +1162,7 @@ final class HUSKY {
 		'price': "<?php esc_html_e( 'price low to high', 'woocommerce-products-filter' ); ?>",
 		'price-desc': "<?php esc_html_e( 'price high to low', 'woocommerce-products-filter' ); ?>",
 		'clear_all': "<?php echo wp_kses_post( apply_filters( 'woof_clear_all_text', $clear_all_text ) ); ?>",
-		'list_opener': "<?php esc_html_e( 'Сhild list opener', 'woocommerce-products-filter' ); ?>",
+		'list_opener': "<?php esc_html_e( 'Child list opener', 'woocommerce-products-filter' ); ?>",
 		};
 
 		if (typeof woof_lang_custom == 'undefined') {
@@ -2294,7 +2301,11 @@ final class HUSKY {
 			if (!empty($t) AND is_array($t)) {
 				foreach ($t as $string) {
 					$tmp = explode(':', $string);
-					$tax_slug = $tmp[0];
+					// Skip malformed parts like "product_cat" or a trailing "+": the expected format is taxonomy:id,id
+					if (!isset($tmp[1]) OR trim($tmp[1]) === '') {
+						continue;
+					}
+					$tax_slug = trim($tmp[0]);
 					$tax_terms = explode(',', $tmp[1]);
 					$slugs = array();
 					foreach ($tax_terms as $term_id) {
@@ -2836,6 +2847,12 @@ final class HUSKY {
 			//the link is the visitor's URL, page elements must not be redrawn from it; legitimate values come via the filter below
 			unset($query_array['woof_redraw_elements']);
 			$_GET = apply_filters('woof_draw_products_get_args', wc_clean(array_merge($query_array, wc_clean($_GET))), WOOF_REQUEST::get('link'));
+			//the pager is rendered inside admin-ajax.php, its links must lead to the visitor's page
+			$this->ajax_pagination_base = $this->get_ajax_pagination_base(WOOF_REQUEST::get('link'));
+			if ($this->ajax_pagination_base) {
+				add_filter('paginate_links', array($this, 'ajax_pagination_link'));
+				add_filter('get_pagenum_link', array($this, 'ajax_pagination_link'));
+				}
 			}
 
 		//Fixing the vulnerability in woocommerce-ordering
@@ -2846,7 +2863,7 @@ final class HUSKY {
 			$product_ids = " product_ids='" . sanitize_text_field(WOOF_REQUEST::get('turbo_mode_ids')) . "' ";
 			}
 
-		$shortcode_str = $this->check_shortcode("woof_products", "[" . WOOF_REQUEST::get('shortcode') . " page=" . WOOF_REQUEST::get('page') . $product_ids . "]");
+		$shortcode_str = $this->check_shortcode("woof_products", "[" . WOOF_REQUEST::get('shortcode') . " page=" . absint(WOOF_REQUEST::get('page')) . $product_ids . "]");
 		//$products = do_shortcode($shortcode_str);
 		$products = apply_filters('woof_draw_products_html', do_shortcode($shortcode_str), $shortcode_str);
 		$additional_fields = array();
@@ -2885,6 +2902,31 @@ final class HUSKY {
 		wp_die(json_encode(compact('products', 'form', 'additional_fields')));
 		}
 
+		//the visitor's page address without a page number, empty when the link does not belong to this site
+		private function get_ajax_pagination_base($link) {
+		if (!is_string($link) OR wp_parse_url($link, PHP_URL_HOST) !== wp_parse_url(home_url(), PHP_URL_HOST)) {
+			return '';
+			}
+		$link = preg_replace('~/page/\d+/?(?=[?#]|$)~', '/', $link);
+		return remove_query_arg(array('paged', 'product-page'), $link);
+		}
+
+		//keeps the page number argument of the link, it is what js/front.js reads on a click:
+		//paged= works on shop, taxonomy and SEO pages, product-page= is the argument of WooCommerce shortcodes
+		public function ajax_pagination_link($link) {
+		if (false === strpos($link, 'admin-ajax.php')) {
+			return $link;
+			}
+		$args = array();
+		parse_str((string) wp_parse_url($link, PHP_URL_QUERY), $args);
+		foreach (array('product-page', 'paged') as $arg) {
+			if (isset($args[$arg]) AND (int) $args[$arg] > 1) {
+				return add_query_arg($arg, (int) $args[$arg], $this->ajax_pagination_base);
+				}
+			}
+		return $this->ajax_pagination_base;
+		}
+
 		public function show_btn($atts) {
 		return $this->render_html(WOOF_PATH . 'views/shortcodes/woof_show_btn.php', $atts);// nosemgrep
 		}
@@ -2903,7 +2945,7 @@ final class HUSKY {
 		//this for synhronizating shortcode woof_products if its has attribute taxonomies
 		$atts = wc_clean($atts);
 		if (isset($atts['taxonomies'])) {
-			$args['additional_taxes'] = apply_filters('woof_set_shortcode_taxonomyattr_behaviour', $atts['taxonomies']);
+			$args['additional_taxes'] = apply_filters('woof_set_shortcode_taxonomyattr_behaviour', $this->sanitize_taxonomies_attr($atts['taxonomies']));
 			} else {
 			$args['additional_taxes'] = '';
 			}
@@ -3179,6 +3221,27 @@ final class HUSKY {
 			$args['range_max'] = null;
 			}
 		return $this->render_html(WOOF_PATH . 'views/shortcodes/woof_price_filter_' . $type . '.php', $args);// nosemgrep
+		}
+		
+		//the taxonomies attribute has the strict format taxonomy:id,id+taxonomy:id
+		//it is rebuilt from validated parts, so no bracket, quote or backslash can reach a rebuilt shortcode
+		private function sanitize_taxonomies_attr($taxonomies) {
+			$res = array();
+			foreach (explode('+', (string) $taxonomies) as $part) {
+				$tmp = explode(':', $part, 2);
+				if (!isset($tmp[1])) {
+					continue;
+				}
+				$tax_slug = trim($tmp[0]);
+				if (!preg_match('/^[a-zA-Z0-9_-]+$/', $tax_slug)) {
+					continue;
+				}
+				$ids = array_filter(array_map('absint', explode(',', $tmp[1])));
+				if (!empty($ids)) {
+					$res[] = $tax_slug . ':' . implode(',', $ids);
+				}
+			}
+			return implode('+', $res);
 		}
 
 		//shortcode
@@ -3850,6 +3913,10 @@ final class HUSKY {
 		//+++
 
 		public function check_shortcode($tag = "", $text = "") {
+		//a backslash is what turns \x5d / \x5b into ] / [ inside shortcode_parse_atts(), legitimate requests never carry one
+		if (strpos((string) $text, '\\') !== false) {
+			return "";
+		}
 		$tags = array(
 		'products_woof',
 		'recent_products_woof',
@@ -3904,12 +3971,25 @@ final class HUSKY {
 		$attr_str = "";
 		if (is_array($atts)) {
 			foreach ($atts as $key => $val) {
+				//shortcode brackets, quotes and backslashes must never reach the rebuilt shortcode string
+				$val = str_replace(array('[', ']', '\\', '"', "'"), '', (string) $val);
 				if (is_int($key)) {
 					$attr_str .= " " . $val;
 					} else {
+					//attribute keys may contain only letters, digits, underscore and dash
+					if (!preg_match('/^[a-zA-Z0-9_-]+$/', (string) $key)) {
+						continue;
+						}
 					$attr_str .= sprintf(" %s='%s'", $key, $val);
 					}
 				}
+			}
+		//WooCommerce shortcodes read the page number only from product-page in the address. An AJAX request
+		//brings it as the page attribute, the address js/front.js writes after a click as the paged query var.
+		if (wp_doing_ajax() AND isset($atts['page'])) {
+			$_GET['product-page'] = absint($atts['page']);
+			} elseif (!isset($_GET['product-page']) AND get_query_var('paged') > 1) {
+			$_GET['product-page'] = absint(get_query_var('paged'));
 			}
 		$shortcode = str_replace("_woof", "", $tag);
 		ob_start();
@@ -3917,7 +3997,8 @@ final class HUSKY {
 
 			<div id="woof_results_by_ajax" class="woof_results_by_ajax_shortcode" data-shortcode="<?php echo esc_attr($tag . $attr_str) ?>" >
 		<?php
-		echo do_shortcode("[" . esc_html($shortcode . $attr_str) . " ]");
+		//the quotes around the values belong to the shortcode, the values have none of their own
+		echo do_shortcode("[" . htmlspecialchars($shortcode . $attr_str, ENT_NOQUOTES, 'UTF-8', false) . " ]");
 		?>
 			</div>
 		<?php

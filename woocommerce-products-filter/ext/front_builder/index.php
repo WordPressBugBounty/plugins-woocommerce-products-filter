@@ -857,8 +857,13 @@ final class WOOF_FRONT_BUILDER extends WOOF_EXT {
 	}
 
 	public function global_options() {
-		$sql          = $this->db->prepare( 'SELECT id FROM %i', $this->table );
-		$data['ids']  = $this->db->get_results( $sql, ARRAY_A );
+		// The table used to be created only on the first [woof_front_builder] render,
+		// so make sure it exists before reading from it on the settings page
+		$data['ids'] = array();
+		if ( ! $this->install() ) {
+			$sql         = $this->db->prepare( 'SELECT id FROM %i', $this->table );
+			$data['ids'] = $this->db->get_results( $sql, ARRAY_A );
+		}
 		$data['slug'] = woof()->get_swoof_search_slug();
 
 		woof()->render_html_e( $this->get_ext_path() . 'views' . DIRECTORY_SEPARATOR . 'global_options.php', $data );

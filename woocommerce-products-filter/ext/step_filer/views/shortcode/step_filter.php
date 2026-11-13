@@ -29,7 +29,7 @@ $woof_reset_btn_txt = WOOF_HELPER::wpml_translate( null, $woof_reset_btn_txt );
 		<?php
 		if ( $woof_reset_btn_txt != 'none' ) :
 			?>
-			<button  class="button woof_reset_search_form" data-link="<?php echo esc_url_raw( $woof_link ); ?>"><?php echo esc_html( $woof_reset_btn_txt ); ?></button><?php endif; ?>       
+			<button  class="button woof_reset_search_form" data-link="<?php echo esc_url_raw( (string) $woof_link ); ?>"><?php echo esc_html( $woof_reset_btn_txt ); ?></button><?php endif; ?>       
 		<button class="button woof_step_filter_next"><?php echo esc_html( $next_btn_txt ); ?></button>
 	</div>
 	<?php if ( $images ) : ?>

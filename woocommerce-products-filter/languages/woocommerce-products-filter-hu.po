@@ -2778,17 +2778,14 @@ msgstr "A kiterjesztés adatait az info.dat fájlba kell írni!"
 msgid "Your settings have been saved."
 msgstr "A beállításokat elmentettük."
 
-msgid "Сhild list opener"
+msgid "Child list opener"
 msgstr "Gyermeklistanyitó"
 
-msgid "Сlear"
-msgstr "Tiszta"
-
-msgid "Сonditionals"
+msgid "Conditionals"
 msgstr "Feltételek"
 
-msgid "Сontainer size"
+msgid "Container size"
 msgstr "A tartály mérete"
 
-msgid "Сount is max"
+msgid "Count is max"
 msgstr "Száma max"

@@ -16,7 +16,7 @@ $from = '';
 $to   = '';
 if ( ! empty( $current_request ) ) {
 	$from = ( $current_request[0] != 'i' ) ? $current_request[0] : '';
-	$to   = ( $current_request[1] != 'i' ) ? $current_request[1] : '';
+	$to   = ( isset( $current_request[1] ) and $current_request[1] != 'i' ) ? $current_request[1] : '';
 }
 // Check if datepicker has  products in current request
 $count                  = 0;
@@ -88,12 +88,12 @@ if ( $show ) :
 	if ( $from ) {
 		$top_panel_txt .= ' ';
 		/* translators: %s: date value */
-		$top_panel_txt .= sprintf( esc_html__( 'from: %s', 'woocommerce-products-filter' ), gmdate( $format_, $from ) );
+		$top_panel_txt .= sprintf( esc_html__( 'from: %s', 'woocommerce-products-filter' ), gmdate( $format_, (int) $from ) );
 	}
 	if ( $to ) {
 		$top_panel_txt .= ' ';
 		/* translators: %s: date value */
-		$top_panel_txt .= sprintf( esc_html__( 'to: %s', 'woocommerce-products-filter' ), gmdate( $format_, $to ) );
+		$top_panel_txt .= sprintf( esc_html__( 'to: %s', 'woocommerce-products-filter' ), gmdate( $format_, (int) $to ) );
 	}
 	?>
 	<div data-css-class="woof_meta_datepicker_container" class="woof_meta_datepicker_container woof_container woof_container_<?php echo esc_attr( 'datepicker_' . $meta_key ); ?>" <?php echo esc_attr( WOOF_HELPER::generate_container_css_classes( $meta_key ) ); ?>>
@@ -117,7 +117,7 @@ if ( $show ) :
 						<input id="<?php echo esc_attr( $date_id ); ?>_from" data-format="<?php echo esc_html( $format ); ?>" type="text" readonly="readonly" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" class="woof_calendar woof_calendar_from" placeholder="<?php esc_html_e( 'from', 'woocommerce-products-filter' ); ?>" />
 						<label class="woof_wcga_label_hide"  for="<?php echo esc_attr( $date_id ); ?>_from"><?php esc_html_e( 'From', 'woocommerce-products-filter' ); ?></label>
 						<a href="#" data-meta-key="<?php echo esc_attr( $meta_key ); ?>" data-name="<?php echo esc_attr( $meta_key ); ?>_from"  class="woof_meta_datepicker_reset">
-							<img src="<?php echo esc_url( woof()->settings['delete_image'] ); ?>" height="12" width="12" alt="<?php esc_html_e( 'Сlear', 'woocommerce-products-filter' ); ?>" />
+							<img src="<?php echo esc_url( woof()->settings['delete_image'] ); ?>" height="12" width="12" alt="<?php esc_html_e( 'Clear', 'woocommerce-products-filter' ); ?>" />
 						</a>
 					</div>
 					<div class="woof_meta_datepicker_container">

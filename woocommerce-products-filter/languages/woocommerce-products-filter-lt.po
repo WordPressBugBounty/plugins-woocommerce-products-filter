@@ -2244,14 +2244,11 @@ msgstr "Informaciją apie plėtinį turėtumėte įrašyti į info.dat failą!"
 msgid "Your settings have been saved."
 msgstr "Jūsų nustatymai išsaugoti."
 
-msgid "Сlear"
-msgstr "Aišku"
-
-msgid "Сonditionals"
+msgid "Conditionals"
 msgstr "Sąlygos"
 
-msgid "Сontainer size"
+msgid "Container size"
 msgstr "Konteinerio dydis"
 
-msgid "Сount is max"
+msgid "Count is max"
 msgstr "Skaičius yra maks"

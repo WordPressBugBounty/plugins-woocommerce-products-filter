@@ -102,7 +102,6 @@ div.checked + label .woof_qt_radio_reset{
 }
 .woof_qt_pagination_item:hover{
 	background: #dfdfdf;
-	;
 	cursor: pointer;
 }
 /*++++*/
@@ -195,7 +194,6 @@ div.checked + label .woof_qt_radio_reset{
 	border: 1px solid #eee;
 	border-radius: 0px;
 	background-color: transparent;
-	;
 	background-image:none;
 	box-shadow: none;
 }

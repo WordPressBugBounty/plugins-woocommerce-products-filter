@@ -56,7 +56,7 @@ final class WOOF_CONDITIONALS extends WOOF_EXT {
 		<li>
 			<a href="#tabs-conditionals">
 				<span class="icon-air"></span>
-				<span><?php esc_html_e( 'Сonditionals', 'woocommerce-products-filter' ); ?></span>
+				<span><?php esc_html_e( 'Conditionals', 'woocommerce-products-filter' ); ?></span>
 			</a>
 		</li>
 		<?php

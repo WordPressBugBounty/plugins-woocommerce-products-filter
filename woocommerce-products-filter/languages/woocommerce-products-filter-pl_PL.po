@@ -3440,8 +3440,3 @@ msgstr "bez aktualizacji"
 #: woocommerce-products-filter/ext/stat/views/tabs_content.php:189
 msgid "xxx"
 msgstr "xxx"
-
-#. Text in echo
-#: woocommerce-products-filter/ext/meta_filter/html_types/datepicker/views/woof.php:120
-msgid "Сlear"
-msgstr "Wyczyść"

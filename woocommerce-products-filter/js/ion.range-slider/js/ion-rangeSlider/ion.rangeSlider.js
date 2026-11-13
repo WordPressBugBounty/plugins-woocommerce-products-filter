@@ -1,4 +1,4 @@
-﻿// Ion.RangeSlider
+// Ion.RangeSlider
 // WOOF custom
 // © Denis Ineshin
 // https://github.com/IonDen

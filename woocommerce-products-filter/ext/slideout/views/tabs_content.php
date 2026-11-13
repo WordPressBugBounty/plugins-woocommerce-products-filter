@@ -290,7 +290,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						$woof_settings['woof_slideout_height_t'] = 'px';
 					}
 					?>
-										<h4><?php esc_html_e( 'Сontainer size', 'woocommerce-products-filter' ); ?></h4>
+										<h4><?php esc_html_e( 'Container size', 'woocommerce-products-filter' ); ?></h4>
 
 					<div class="woof-control-container woof_slideout_сontainer_size">
 						<div class="woof-control ">

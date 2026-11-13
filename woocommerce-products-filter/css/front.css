@@ -707,7 +707,6 @@ a.chosen-single{
 	border: 2px solid #aaa;
 	border-radius: 0px;
 	background-color: transparent;
-	;
 	background-image:none;
 	box-shadow: none;
 }
@@ -933,7 +932,6 @@ a.chosen-single{
 }
 .woof_sid_flat_dark .easy-autocomplete-container ul {
 	background: none repeat scroll 0 0 #4e4d4d;
-	;
 	border-top: 1px dotted #ccc;
 	display: none;
 	margin-top: 0;

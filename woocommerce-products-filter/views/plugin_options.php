@@ -1256,7 +1256,7 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 									<tr>
 										<th scope="row"><label for="js_after_ajax_done"><?php esc_html_e( 'JavaScript code after AJAX is done', 'woocommerce-products-filter' ); ?></label></th>
 										<td>
-											<textarea class="wide woof_custom_css" id="js_after_ajax_done" name="woof_settings[js_after_ajax_done]"><?php echo (isset( $this->settings['js_after_ajax_done'] )?esc_textarea( stripcslashes( esc_js( str_replace( '"', "'", $this->settings['js_after_ajax_done'] ) ) ) ):'') ?></textarea>
+											<textarea class="wide woof_custom_css" id="js_after_ajax_done" name="woof_settings[js_after_ajax_done]"><?php echo (isset( $this->settings['js_after_ajax_done'] )?esc_textarea( stripcslashes( html_entity_decode( $this->settings['js_after_ajax_done'], ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) ):'') ?></textarea>
 											<p class="description"><?php esc_html_e( 'Use it when you are need additional action after AJAX redraw your products in shop page or in page with shortcode! For use when you need additional functionality after AJAX redraw of your products on the shop page or on pages with shortcodes.', 'woocommerce-products-filter' ); ?></p>
 										</td>
 									</tr>

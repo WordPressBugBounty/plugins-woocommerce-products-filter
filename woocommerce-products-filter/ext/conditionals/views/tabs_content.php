@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 				<div class="woof-section-title">
 					<div class="col-title">
-						<h4><?php esc_html_e( 'Сonditionals', 'woocommerce-products-filter' ); ?></h4>
+						<h4><?php esc_html_e( 'Conditionals', 'woocommerce-products-filter' ); ?></h4>
 					</div>
 					<div class="col-button">
 						<a href="https://products-filter.com/extencion/conditionals/" target="_blank" class="button-primary"><span class="icon-info"></span></a><br>

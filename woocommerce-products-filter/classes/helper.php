@@ -61,6 +61,17 @@ final class WOOF_HELPER {
 		return map_deep( wp_unslash( $query_array ), 'sanitize_text_field' );
 	}
 
+	/**
+	 * Stored form of the "JavaScript code after AJAX is done" setting. The front prints it through
+	 * html_entity_decode() and stripcslashes(), so the code takes the reverse steps here. The entities
+	 * also carry <, > and % through sanitize_textarea_field(), which would cut them out of the code.
+	 */
+	public static function encode_js_setting( $code ) {
+		$code = str_replace( '\\', '\\\\', $code );
+
+		return str_replace( array( '&', '<', '>', '%' ), array( '&amp;', '&lt;', '&gt;', '&#37;' ), $code );
+	}
+
 	public static function sanitize_array( $array, $path = '' ) {
 
 		$is_html     = array( 'override_no_products' );
@@ -730,7 +741,8 @@ final class WOOF_HELPER {
 
 		// fix  if current query has more them  one taxonomy
 		$temp_arr = array();
-		if ( isset( $args['taxonomy'] ) and isset( $args[ $args['taxonomy'] ] ) and ! empty( $args[ $args['taxonomy'] ] ) ) {
+		// A non-string value (for example pa_color[]=red in the URL) must not reach explode()
+		if ( isset( $args['taxonomy'] ) and isset( $args[ $args['taxonomy'] ] ) and is_string( $args[ $args['taxonomy'] ] ) and ! empty( $args[ $args['taxonomy'] ] ) ) {
 			$temp_arr = explode( ',', $args[ $args['taxonomy'] ] );
 			if ( ! $temp_arr or count( $temp_arr ) < 1 ) {
 				$temp_arr = array();

@@ -539,6 +539,10 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 			if ( ! empty( $t ) and is_array( $t ) ) {
 				foreach ( $t as $string ) {
 					$tmp       = explode( ':', $string );
+					// Skip malformed parts like "product_cat" or a trailing "+": the expected format is taxonomy:id,id
+					if ( ! isset( $tmp[1] ) ) {
+						continue;
+					}
 					$tax_slug  = $tmp[0];
 					$tax_terms = explode( ',', $tmp[1] );
 					$slugs     = array();
@@ -546,7 +550,7 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 					foreach ( $tax_terms as $term_id ) {
 						$term = get_term( intval( $term_id ), $tax_slug );
 
-						if ( is_object( $term ) ) {
+						if ( is_object( $term ) && ! is_wp_error( $term ) ) {
 							$slugs[] = $term->slug;
 						}
 					}
@@ -644,12 +648,16 @@ final class WOOF_EXT_TURBO_MODE extends WOOF_EXT {
 			if ( ! empty( $t ) and is_array( $t ) ) {
 				foreach ( $t as $string ) {
 					$tmp       = explode( ':', $string );
+					// Skip malformed parts like "product_cat" or a trailing "+": the expected format is taxonomy:id,id
+					if ( ! isset( $tmp[1] ) ) {
+						continue;
+					}
 					$tax_slug  = $tmp[0];
 					$tax_terms = explode( ',', $tmp[1] );
 					$slugs     = array();
 					foreach ( $tax_terms as $term_id ) {
 						$term = get_term( intval( $term_id ), $tax_slug );
-						if ( is_object( $term ) ) {
+						if ( is_object( $term ) && ! is_wp_error( $term ) ) {
 							$slugs[] = $term->slug;
 						}
 					}

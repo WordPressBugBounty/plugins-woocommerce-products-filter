@@ -3976,18 +3976,14 @@ msgstr ""
 msgid "Your settings have been saved."
 msgstr ""
 
-#: ext/meta_filter/html_types/datepicker/views/woof.php:118
-msgid "Сlear"
-msgstr ""
-
 #: ext/conditionals/index.php:59 ext/conditionals/views/tabs_content.php:21
-msgid "Сonditionals"
+msgid "Conditionals"
 msgstr ""
 
 #: ext/slideout/views/tabs_content.php:282
-msgid "Сontainer size"
+msgid "Container size"
 msgstr ""
 
 #: ext/query_save/index.php:129 ext/products_messenger/index.php:290
-msgid "Сount is max"
+msgid "Count is max"
 msgstr ""

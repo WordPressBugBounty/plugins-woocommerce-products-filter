@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'No direct access allowed' );
 }
 
-global $WOOF, $wp_query;
+global $WOOF, $wp_query, $wpdb;
 
 if ( is_user_logged_in() ) {
 	$request = '';
@@ -16,6 +16,8 @@ if ( is_user_logged_in() ) {
 	if ( null == $request ) {
 		$request = '';
 	}
+	// The % placeholder of WordPress is valid in this request only, the query is stored and run later
+	$request = $wpdb->remove_placeholder_escape( $request );
 	woof()->storage->set_val( 'woof_pm_request_' . get_current_user_id(), base64_encode( $request ) ); // Save current request
 }
 

@@ -145,7 +145,7 @@ final class WOOF_EXT_QUERY_SAVE extends WOOF_EXT {
 		}
 
 		if ( count( $saved_q ) >= $this->search_count ) {
-			die( '<li class="woof_sq_max_count" >' . esc_html__( 'Сount is max', 'woocommerce-products-filter' ) . '</li>' ); // Check limit count on backend
+			die( '<li class="woof_sq_max_count" >' . esc_html__( 'Count is max', 'woocommerce-products-filter' ) . '</li>' ); // Check limit count on backend
 		}
 
 		// +++

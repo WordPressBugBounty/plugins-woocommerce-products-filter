@@ -2738,17 +2738,14 @@ msgstr "Du skal skrive udvidelsesoplysninger i info.dat-filen!"
 msgid "Your settings have been saved."
 msgstr "Dine indstillinger er blevet gemt."
 
-msgid "Сhild list opener"
+msgid "Child list opener"
 msgstr "Børnelisteåbner"
 
-msgid "Сlear"
-msgstr "Ryd"
-
-msgid "Сonditionals"
+msgid "Conditionals"
 msgstr "Betingelser"
 
-msgid "Сontainer size"
+msgid "Container size"
 msgstr "Сontainer størrelse"
 
-msgid "Сount is max"
+msgid "Count is max"
 msgstr "Antal er max"

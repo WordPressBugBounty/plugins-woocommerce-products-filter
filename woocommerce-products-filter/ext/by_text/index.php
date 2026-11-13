@@ -677,6 +677,43 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 		return $where;
 	}
 
+	/**
+	 * Parent product IDs of published variations whose SKU matches the search term.
+	 * Memoized per request: create_where_query() runs for every WP_Query of the page (dynamic recount).
+	 */
+	private function get_parent_ids_by_variation_sku( $search_type, $like, $term ) {
+		static $memo = array();
+
+		// Too short to be a meaningful SKU fragment and would match a huge number of variations
+		$length = function_exists( 'mb_strlen' ) ? mb_strlen( $term ) : strlen( $term );
+		if ( $length < 3 ) {
+			return array();
+		}
+
+		$key = $search_type . '|' . $like;
+		if ( isset( $memo[ $key ] ) ) {
+			return $memo[ $key ];
+		}
+
+		global $wpdb;
+		// $search_type is an internal constant (' LIKE ' or ' RLIKE '), never user input
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT posts.post_parent
+				FROM {$wpdb->posts} AS posts
+				INNER JOIN {$wpdb->postmeta} AS pm ON ( posts.ID = pm.post_id AND pm.meta_key = '_sku' )
+				WHERE posts.post_type = 'product_variation'
+				AND posts.post_status = 'publish'
+				AND posts.post_parent > 0
+				AND pm.meta_value $search_type %s",// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$like
+			)
+		);
+
+		$memo[ $key ] = array_map( 'intval', $ids );
+		return $memo[ $key ];
+	}
+
 	public function create_where_query( $search_terms ) {
 		$tax_search           = 0;
 		$meta_search          = 0;
@@ -758,6 +795,13 @@ final class WOOF_EXT_BY_TEXT extends WOOF_EXT {
 			if ( $meta_search && ! empty( $meta_search_terms ) ) {
 				foreach ( $meta_search_terms as $meta_term ) {
 					$sub_sql[] = $wpdb->prepare( "( postmeta.meta_key = %s AND  postmeta.meta_value $search_type %s)", $meta_term, $like );// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				}
+			}
+			// Variation SKUs live on product_variation posts, so match them separately and add their parent products
+			if ( isset( $this->options['sku_compatibility'] ) && $this->options['sku_compatibility'] && ' AND ' !== $relation ) {
+				$parent_ids = $this->get_parent_ids_by_variation_sku( $search_type, $like, $term );
+				if ( ! empty( $parent_ids ) ) {
+					$sub_sql[] = "({$wpdb->posts}.ID IN (" . implode( ',', $parent_ids ) . '))';
 				}
 			}
 
