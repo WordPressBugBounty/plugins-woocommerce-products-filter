@@ -142,7 +142,7 @@ jQuery(function ($) {
 
     //***
 
-    jQuery('body').on('click', '.woof_open_hidden_li_btn', function () {
+    jQuery('body').on('click', '.woof .woof_open_hidden_li_btn', function () {
         var state = jQuery(this).data('state');
         var type = jQuery(this).data('type');
 
@@ -160,7 +160,7 @@ jQuery(function ($) {
                         .find('img')
                         .attr('src', jQuery(this).data('opened'));
             } else {
-                jQuery(this).html(jQuery(this).data('opened'));
+                jQuery(this).text(jQuery(this).data('opened'));
             }
 
             jQuery(this).data('state', 'opened');
@@ -2128,16 +2128,26 @@ function woof_supports_html5_storage() {
 }
 
 function woof_init_tooltip() {
-    var tooltips = jQuery('.woof_tooltip_header');
-
-    if (tooltips.length) {
-        jQuery(tooltips).tooltipster({
+    // Only tooltips inside the plugin's own filter markup
+    jQuery('.woof .woof_tooltip_header').each(function () {
+        // data-tooltip-content must be a plain "#id", content is passed explicitly
+        var ref = String(jQuery(this).attr('data-tooltip-content') || '');
+        if (!/^#[\w-]+$/.test(ref)) {
+            return;
+        }
+        var el = document.getElementById(ref.slice(1));
+        if (!el) {
+            return;
+        }
+        jQuery(this).tooltipster({
             theme: 'tooltipster-noir',
             side: 'right',
             trigger: 'click',
+            content: jQuery(el)
         });
-    }
+    });
 }
+
 function woof_before_ajax_form_redrawing() {
     if (woof_select_type == 'selectwoo') {
         try {

@@ -534,7 +534,7 @@
                             $el;
 
                     if (selector) {
-                        $el = $(selector);
+                        $el = $(document).find(selector);
                     }
 
                     if ($el && $el[0]) {

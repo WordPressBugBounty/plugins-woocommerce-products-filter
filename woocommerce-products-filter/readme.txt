@@ -5,7 +5,7 @@ Tags: filter, woocommerce filter, woocommerce, product filter, ajax filter
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.8
+Stable tag: 1.4.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 6.0
@@ -190,6 +190,9 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.9 =
+* Security fix. Thanks to Santh (Patchstack)
 
 = 1.4.8 =
 * Security fix. Thanks to Askar (Patchstack)
