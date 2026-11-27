@@ -65,8 +65,50 @@ WP_Filesystem();
 			
 			
 			<?php
-// Upsell notice for the free line only. Hidden in every premium build.
-if ( $WOOF->show_notes ) :
+// Black Friday to New Year campaign of the free line: up to Dec 31, 2026 (site time) the banner
+// takes the place of the upsell notice below; from Jan 1, 2027 the notice is back.
+$woof_bf2026 = $WOOF->show_notes && wp_date( 'Ymd' ) <= '20261231';
+if ( $woof_bf2026 ) :
+	?>
+	<div id="woof-bf2026-banner" style="display:none;margin:0 0 18px 0;padding:16px 44px 16px 18px;position:relative;border:1px solid #d7ddf0;border-left:4px solid #2f55d4;border-radius:4px;background:#f6f8fe;">
+		<a href="https://products-filter.com/downloads?utm_source=plugin&amp;utm_medium=free_notice&amp;utm_campaign=bf2026&amp;coupon=BF2026" target="_blank" rel="noopener" style="display:block;max-width:760px;">
+			<img src="<?php echo esc_url( WOOF_LINK . 'img/husky-bf2026.webp' ); ?>" width="760" height="398" alt="HUSKY Products Filter: Black Friday, Cyber Monday, Christmas and New Year, 50% off the first payment of annual and lifetime plans, code BF2026, Nov 27 - Dec 31, 2026" style="display:block;width:100%;height:auto;border-radius:4px;">
+		</a>
+		<a href="#" id="woof-bf2026-close" title="Hide permanently" style="position:absolute;top:10px;right:12px;text-decoration:none;color:#8a8f98;font-size:16px;line-height:1;">&times;</a>
+	</div>
+	<script>
+		( function () {
+			var key = 'woof_bf2026_banner_hidden'; // its own key: closing the banner does not hide the upsell notice of January
+			var box = document.getElementById( 'woof-bf2026-banner' );
+			if ( ! box ) {
+				return;
+			}
+			var hidden = false;
+			try {
+				hidden = window.localStorage.getItem( key ) === '1';
+			} catch ( e ) {
+				hidden = document.cookie.indexOf( key + '=1' ) !== -1;
+			}
+			if ( ! hidden ) {
+				box.style.display = 'block'; // reveal only when not dismissed, avoids a flash
+			}
+			document.getElementById( 'woof-bf2026-close' ).addEventListener( 'click', function ( ev ) {
+				ev.preventDefault();
+				if ( ! window.confirm( 'Hide this message permanently? It will not be shown again in this browser.' ) ) {
+					return;
+				}
+				try {
+					window.localStorage.setItem( key, '1' );
+				} catch ( e ) {}
+				document.cookie = key + '=1; path=/; max-age=34560000; SameSite=Lax';
+				box.style.display = 'none';
+			} );
+		} )();
+	</script>
+<?php endif; ?>
+<?php
+// Upsell notice for the free line only. Hidden in every premium build, and while the banner above runs.
+if ( $WOOF->show_notes && ! $woof_bf2026 ) :
 	?>
 	<div id="woof-upsell-notice" style="display:none;margin:0 0 18px 0;padding:16px 44px 16px 18px;position:relative;border:1px solid #d7ddf0;border-left:4px solid #2f55d4;border-radius:4px;background:#f6f8fe;font-size:13px;line-height:1.6;color:#23282d;">
 		<div style="font-size:15px;font-weight:700;margin-bottom:6px;">Hit the limits of the free HUSKY?</div>
@@ -1718,24 +1760,9 @@ if ( ! $WOOF->show_notes && ! is_dir( WOOF_PATH . 'freemius' ) ) :
 												<?php
 												global $wpdb;
 
-												$charset_collate = '';
-												if ( method_exists( $wpdb, 'has_cap' ) and $wpdb->has_cap( 'collation' ) ) {
-													if ( ! empty( $wpdb->charset ) ) {
-														$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-													}
-													if ( ! empty( $wpdb->collate ) ) {
-														$charset_collate .= " COLLATE $wpdb->collate";
-													}
-												}
-												// ***
-												$sql = 'CREATE TABLE IF NOT EXISTS `' . HUSKY::$query_cache_table . "` (
-                                                    `mkey` varchar(64) NOT NULL,
-                                                    `mvalue` text NOT NULL,
-                                                    PRIMARY KEY `mkey` (`mkey`)
-                                                  ) {$charset_collate}";
+												$sql = HUSKY::get_query_cache_table_sql();
 
-                                                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- CREATE TABLE with WordPress globals only, no user input.
-												if ( $wpdb->query( $sql ) === false ) {
+												if ( ! HUSKY::ensure_query_cache_table() ) {
 													?>
 													<p class="description"><?php esc_html_e( 'HUSKY cannot create the database table! Make sure that your mysql user has the CREATE privilege! Do it manually using your host panel&phpmyadmin!', 'woocommerce-products-filter' ); ?></p>
 													<code><?php echo esc_html( $sql ); ?></code>

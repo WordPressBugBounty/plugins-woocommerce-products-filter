@@ -517,9 +517,15 @@ class WOOF_URL_PARSER {
 
 						// Mirror of woof_get_submit_link() in js/url_parser.js: taxonomies,
 						// meta fields and the rest are all encoded the same way there.
-						$needle  = array( '-and-', '-or-', '-to-', '+' );
-						$replase = array( ',', ',', '^', ' ' );
+						$needle  = array( '-and-', '-or-', '+' );
+						$replase = array( ',', ',', ' ' );
 						$s_match = urldecode( $s_match );
+						// '-to-' is the meta slider range separator ("10^20"): only a pure "number-to-number"
+						// value is a range, so term slugs like "dim-to-warm" stay intact.
+						if ( ! taxonomy_exists( $f_real_key ) ) {
+							$s_match = preg_replace( '/^(-?\d+(?:\.\d+)?)-to-(-?\d+(?:\.\d+)?)$/', '$1^$2', $s_match );
+						}
+
 						if ( isset( $settings['meta_filter'] ) and isset( $settings['meta_filter'][ $f_real_key ] ) ) {
 							$f_real_key = $settings['meta_filter'][ $f_real_key ]['search_view'] . '_' . $f_real_key;
 						}

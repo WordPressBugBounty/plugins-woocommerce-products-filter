@@ -4,10 +4,10 @@
 	Plugin URI: https://products-filter.com/
 	Description: HUSKY - WooCommerce Products Filter Professional. Flexible, easy and robust products filter for WooCommerce store site!
 	Requires at least: 6.0
-	Tested up to: 7.1
+	Tested up to: 7.2
 	Author: realmag777
 	Author URI: https://pluginus.net/
-	Version: 1.4.9
+	Version: 1.5.0
 	Requires PHP: 7.4
 	Tags: filter,search,woocommerce,woocommerce filter,woocommerce product filter,woocommerce products filter,products filter,product filter,filter of products,filter for products,filter for woocommerce
 	Text Domain: woocommerce-products-filter
@@ -110,7 +110,7 @@ define( 'WOOF_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOOF_LINK', plugin_dir_url( __FILE__ ) );
 define( 'WOOF_PLUGIN_NAME', plugin_basename( __FILE__ ) );
 define( 'WOOF_EXT_PATH', WOOF_PATH . 'ext/' );
-define( 'WOOF_VERSION', '1.4.9' );
+define( 'WOOF_VERSION', '1.5.0' );
 // define('WOOF_VERSION', uniqid('woof-')); //for dev only to avoid js/css cache
 define( 'WOOF_MIN_WOOCOMMERCE_VERSION', '6.0' );
 // classes
@@ -131,7 +131,7 @@ require WOOF_PATH . 'installer/first_settings.php';
 require WOOF_PATH . 'classes/mcp/boot.php';
 HUSKY_MCP::init();
 
-// 19-11-2026
+// 27-11-2026
 if ( ! class_exists( 'HUSKY' ) ) {
 final class HUSKY {
 
@@ -166,7 +166,7 @@ final class HUSKY {
 		$this->init_settings();
 		if ( ! $this->is_should_init() ) {
 			$this->is_activated = false;
-			return null;
+			return;
 		}
 
 		// +++
@@ -3353,6 +3353,34 @@ final class HUSKY {
 			}
 		$this->cache_count_data_clear();
 		}
+		
+		// SQL of the query cache table, shared by the settings page and the counter.
+		public static function get_query_cache_table_sql() {
+			global $wpdb;
+
+			$charset_collate = '';
+			if ( method_exists( $wpdb, 'has_cap' ) and $wpdb->has_cap( 'collation' ) ) {
+				if ( ! empty( $wpdb->charset ) ) {
+					$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+				}
+				if ( ! empty( $wpdb->collate ) ) {
+					$charset_collate .= " COLLATE $wpdb->collate";
+				}
+			}
+
+			return 'CREATE TABLE IF NOT EXISTS `' . self::$query_cache_table . "` (
+				`mkey` varchar(64) NOT NULL,
+				`mvalue` text NOT NULL,
+				PRIMARY KEY `mkey` (`mkey`)
+			) {$charset_collate}";
+		}
+
+		// Creates the query cache table if it is missing, returns false on failure.
+		public static function ensure_query_cache_table() {
+			global $wpdb;
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- CREATE TABLE with WordPress globals only, no user input.
+			return $wpdb->query( self::get_query_cache_table_sql() ) !== false;
+		}
 
 		public function cache_count_data_clear() {
 		global $wpdb;
@@ -3930,6 +3958,10 @@ final class HUSKY {
 		$pattern = get_shortcode_regex($tags);
 		preg_match_all("/$pattern/", $text, $matches);
 		if (isset($matches[0][0]) AND !empty($matches[0][0])) {
+			//only one plain tag may pass: brackets or angle brackets inside it let WordPress run another shortcode
+			if (strpbrk(substr($matches[0][0], 1, -1), '[]<>') !== false) {
+				return "";
+				}
 			return $matches[0][0];
 			} else {
 			return "";

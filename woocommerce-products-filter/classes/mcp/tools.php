@@ -545,6 +545,8 @@ final class HUSKY_MCP_TOOLS {
 			return self::error_result( $result->get_error_message(), $result->get_error_code() );
 		}
 
+		$result = self::empty_attributes_as_object( $result );
+
 		return array(
 			'content'           => array(
 				array(
@@ -555,6 +557,24 @@ final class HUSKY_MCP_TOOLS {
 			'structuredContent' => $result,
 			'isError'           => false,
 		);
+	}
+
+	/**
+	 * The output schema declares "attributes" an object: an empty PHP array has
+	 * to go out as {} and not [], or MCP clients reject the whole answer.
+	 */
+	private static function empty_attributes_as_object( $result ) {
+		if ( isset( $result['attributes'] ) && array() === $result['attributes'] ) {
+			$result['attributes'] = new stdClass();
+		}
+		if ( isset( $result['products'] ) && is_array( $result['products'] ) ) {
+			foreach ( $result['products'] as $i => $card ) {
+				if ( is_array( $card ) && isset( $card['attributes'] ) && array() === $card['attributes'] ) {
+					$result['products'][ $i ]['attributes'] = new stdClass();
+				}
+			}
+		}
+		return $result;
 	}
 
 	/**

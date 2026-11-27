@@ -18,7 +18,7 @@ final class WOOF_EXT_URL_REQUEST extends WOOF_EXT {
 		parent::__construct();
 
 		if ( empty( trim( get_option( 'permalink_structure' ) ) ) ) {
-			return false;
+			return;
 		}
 
 		include_once $this->get_ext_path() . 'classes/url_parser.php';

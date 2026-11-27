@@ -523,6 +523,17 @@ final class WOOF_SD extends WOOF_EXT {
 		$sql      = $this->db->prepare( 'SELECT * FROM %i ORDER BY title asc', $this->table );
 		$elements = $this->db->get_results( $sql, ARRAY_A );
 
+		// The table can be missing while the install flag is set (database moved without it):
+		// drop the flag, create the table and read again. Only one attempt per request.
+		static $repair_tried = false;
+		// With the flag missing install() has already tried to create the table on this request.
+		if ( '' !== $this->db->last_error && ! $repair_tried && get_option( 'woof_sd_table_installed', 0 ) ) {
+			$repair_tried = true;
+			delete_option( 'woof_sd_table_installed' );
+			$this->install();
+			$elements = $this->db->get_results( $sql, ARRAY_A );
+		}
+
 		if ( function_exists( 'woof' ) && woof() && woof()->show_notes ) {
 			if ( ! empty( $elements ) ) {
 				$elements = array( $elements[0] );
@@ -795,6 +806,11 @@ final class WOOF_SD extends WOOF_EXT {
 	}
 
 	private function install() {
+		// The table is created once; the flag is autoloaded, so this check costs no extra query
+		if ( get_option( 'woof_sd_table_installed', 0 ) ) {
+			return '';
+		}
+
 		$charset_collate = '';
 		if ( method_exists( $this->db, 'has_cap' ) and $this->db->has_cap( 'collation' ) ) {
 			if ( ! empty( $this->db->charset ) ) {
@@ -819,6 +835,9 @@ final class WOOF_SD extends WOOF_EXT {
 		if ( $this->db->query( $sql ) === false ) {
 			$answer = esc_html__( 'HUSKY cannot create database table for smart designer! Make sure that your mysql user has the CREATE privilege! Do it manually using your host panel and phpmyadmin!', 'woocommerce-products-filter' );
 			// $data['last_error'] = $this->db->last_error;
+		} else {
+			// Remember success so the CREATE query is not repeated on every request
+			update_option( 'woof_sd_table_installed', 1, true );
 		}
 
 		return $answer;

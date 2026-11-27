@@ -89,7 +89,7 @@ final class WOOF_EXT_QUICK_TEXT extends WOOF_EXT {
 		}
 		$data['short_id'] = $this->check_id_file( $data['short_id'] );
 		WOOF_REQUEST::set( 'woof_qt', true );
-		WOOF_REQUEST::set( 'woof_quick_search_link', $this->get_ext_link() . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'data_' . $data['short_id'] . '_' . $curr_lang . '.json' );
+		WOOF_REQUEST::set( 'woof_quick_search_link', $this->get_data_file_link( $data['short_id'], $curr_lang ) );
 
 		if ( file_exists( $this->get_ext_override_path() . 'views' . DIRECTORY_SEPARATOR . 'shortcodes' . DIRECTORY_SEPARATOR . 'woof_quick_search.php' ) ) {
 			return woof()->render_html( $this->get_ext_override_path() . 'views' . DIRECTORY_SEPARATOR . 'shortcodes' . DIRECTORY_SEPARATOR . 'woof_quick_search.php', $data );// nosemgrep
@@ -148,7 +148,7 @@ final class WOOF_EXT_QUICK_TEXT extends WOOF_EXT {
 		if ( WOOF_REQUEST::isset( 'woof_quick_search_link' ) ) {
 			$link = WOOF_REQUEST::get( 'woof_quick_search_link' );
 		} else {
-			$link = $this->get_ext_link() . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'data_0000_xxx.json';
+			$link = $this->get_data_file_link( '0000', 'xxx' );
 		}
 		$currency_data = array();
 		if ( class_exists( 'WOOCS' ) ) {
@@ -305,7 +305,7 @@ final class WOOF_EXT_QUICK_TEXT extends WOOF_EXT {
 		
 		WP_Filesystem();
 
-		$dir_path = $this->get_ext_path() . '/data/';
+		$dir_path = $this->get_data_dir( true );
 		$langs    = $this->get_all_lang_wpml();
 
 		if ( $langs ) {
@@ -526,7 +526,7 @@ final class WOOF_EXT_QUICK_TEXT extends WOOF_EXT {
 
 	// File works
 	private function delete_all_files( $folder = '' ) {
-		$path = $this->get_ext_path() . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+		$path = $this->get_data_dir();
 		if ( $folder ) {
 			$path .= $folder . DIRECTORY_SEPARATOR;
 		}
@@ -551,7 +551,7 @@ final class WOOF_EXT_QUICK_TEXT extends WOOF_EXT {
 		WP_Filesystem();
 
 		if ( count( $ids ) < 1 or $is_end ) {
-			$dir_path = $this->get_ext_path() . '/data/';
+			$dir_path = $this->get_data_dir( true );
 			$langs    = $this->get_all_lang_wpml();
 			if ( $langs ) {
 				foreach ( $langs as $lang ) {
@@ -583,7 +583,7 @@ final class WOOF_EXT_QUICK_TEXT extends WOOF_EXT {
 		
 		WP_Filesystem();
 
-		$file = $this->get_ext_path() . '/data/temp/data_' . $id . '_' . $lang . '.json';
+		$file = $this->get_data_dir( true ) . 'temp/data_' . $id . '_' . $lang . '.json';
 
 		try {
 			clearstatcache( true, $file );
@@ -742,6 +742,38 @@ final class WOOF_EXT_QUICK_TEXT extends WOOF_EXT {
 		}
 
 		return apply_filters( 'woof_qs_get_template_structure', $tpl_str );
+	}
+
+	// Folder of the search index in uploads, so the index survives plugin updates.
+	// The folder and its temp subfolder are created only while the index is built.
+	public function get_data_dir( $create = false ) {
+		$upload = wp_upload_dir( null, false );
+		$dir    = trailingslashit( $upload['basedir'] ) . 'woof_quick_search/';
+		if ( $create ) {
+			wp_mkdir_p( $dir . 'temp/' );
+		}
+		return $dir;
+	}
+
+	// Link to the uploads folder of the index, with the scheme of the current request
+	public function get_data_url() {
+		$upload = wp_upload_dir( null, false );
+		return set_url_scheme( trailingslashit( $upload['baseurl'] ) . 'woof_quick_search/' );
+	}
+
+	// The index file in uploads when it is there, otherwise the old place inside the plugin folder,
+	// otherwise an empty list shipped with the plugin, so the browser never asks for a missing file.
+	// Only file checks: no database query.
+	public function get_data_file_link( $id, $lang ) {
+		$name = 'data_' . $id . '_' . $lang . '.json';
+		if ( file_exists( $this->get_data_dir() . $name ) ) {
+			return $this->get_data_url() . $name;
+		}
+		if ( file_exists( $this->get_ext_path() . 'data' . DIRECTORY_SEPARATOR . $name ) ) {
+			return $this->get_ext_link() . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . $name;
+		}
+		// a name of its own: an update that overwrites files must not replace an old index
+		return $this->get_ext_link() . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'empty.json';
 	}
 
 	public function check_id_file( $id = '0000' ) {

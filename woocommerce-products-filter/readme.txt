@@ -3,9 +3,9 @@ Contributors: RealMag777
 Donate link: https://products-filter.com/downloads
 Tags: filter, woocommerce filter, woocommerce, product filter, ajax filter
 Requires at least: 6.0
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 1.4.9
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 6.0
@@ -190,6 +190,16 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.5.0 =
+* Security fix. Thanks to Santh (Patchstack)
+* Fixed: database error "Table woof_query_cache doesn't exist" in the error log when the "Cache dynamic recount" option is enabled and the table is missing (for example after the plugin was reinstalled or the database was moved); the table is now created automatically
+* Fixed: SEO URL: filtering by terms with "-to-" in the slug (for example dim-to-warm) returned no products
+* Fixed: Quick Search: the search index is now stored in wp-content/uploads/woof_quick_search, so it is no longer lost after a plugin update; the index is saved there the next time you press "Update now!" in the Quick Search tab
+* Fixed: Smart Designer no longer runs a CREATE TABLE query on every page load; its table is created again automatically if it is missing
+* Fixed: MCP server: products without attributes were returned with "attributes": [] instead of {}, so some AI clients rejected the whole answer
+* Fixed: PHP 8.6 deprecation notices "Returning a value from a constructor"
+* Compatibility: tested with WordPress 7.2 and PHP 8.6
 
 = 1.4.9 =
 * Security fix. Thanks to Santh (Patchstack)

@@ -11,6 +11,8 @@ var woof_qt_template_code = "";
 var woof_qt_show_products = 1;
 var woof_qt_current_sort = "title-asc";
 var woof_qt_load_count = 0;
+var woof_qt_data_loaded = false;/* the index file has been received, it may be empty */
+var woof_qt_data_loading = false;/* a request for the index file is in flight */
 var woof_qt_target = "_blank";
 var woof_qt_tax_logic = "AND";
 var woof_qt_group_text_logic = "AND";
@@ -352,9 +354,12 @@ function woof_quick_search_generate_meta_filter(meta_data) {
 
 function woof_quick_search_draw() {
     if (!data_text.length) {
-        woof_qt_load_count++;/*if no date*/
-        if (woof_qt_load_count < 10) {
-            woof_load_serch_data();
+        /* an empty index is a final answer: ask for the file again only while it has not been received */
+        if (!woof_qt_data_loaded) {
+            woof_qt_load_count++;/*if no date*/
+            if (woof_qt_load_count < 10) {
+                woof_load_serch_data();
+            }
         }
         return;
     }
@@ -1271,11 +1276,18 @@ function woof_qt_parse_term_logic(term_str) {
  * 
  */
 function woof_load_serch_data() {
+    if (woof_qt_data_loading) {
+        return;
+    }
+    woof_qt_data_loading = true;
     jQuery.getJSON(wooftextfilelink.link, function (data) {
-        data_text = data
+        data_text = data;
+        woof_qt_data_loaded = true;
     }).done(function () {
         console.log("File downloaded!");
         jQuery('#woof_quick_search_form').trigger("keyup");
+    }).always(function () {
+        woof_qt_data_loading = false;
     });
 }
 

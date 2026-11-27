@@ -51,7 +51,7 @@ abstract class WOOF_EXT {
 		}
 
 		// ***
-		return ++self::$ext_count;
+		++self::$ext_count;
 	}
 
 	public function get_html_type_view() {

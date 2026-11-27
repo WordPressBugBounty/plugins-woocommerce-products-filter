@@ -73,15 +73,27 @@ final class WP_QueryWoofCounter {
 			wp_cache_set( $this->key_string, $this->post_count, 'woocs_count', $this->expire );
 			return;
 		}
+		
 		global $wpdb;
-		$wpdb->query(
-			$wpdb->prepare(
-				"INSERT INTO {$this->table} (mkey, mvalue) VALUES (%s, %d) ON DUPLICATE KEY UPDATE mvalue=%d",// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$this->key_string,
-				$this->post_count,
-				$this->post_count
-			)
+		$sql = $wpdb->prepare(
+			"INSERT INTO {$this->table} (mkey, mvalue) VALUES (%s, %d) ON DUPLICATE KEY UPDATE mvalue=%d",// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$this->key_string,
+			$this->post_count,
+			$this->post_count
 		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- prepared above.
+		if ( $wpdb->query( $sql ) === false ) {
+			// The table can be missing after a plugin reinstall or a database migration: create it and retry once.
+			// Only one attempt per request, so a database that cannot create the table gets no extra queries.
+			static $ensure_tried = false;
+			if ( ! $ensure_tried ) {
+				$ensure_tried = true;
+				if ( HUSKY::ensure_query_cache_table() ) {
+					$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				}
+			}
+		}
 	}
 
 	private function get_value() {

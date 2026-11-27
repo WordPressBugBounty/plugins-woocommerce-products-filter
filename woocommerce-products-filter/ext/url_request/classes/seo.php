@@ -16,7 +16,7 @@ class WOOF_SEO {
 
 	public function __construct( $rules, $url ) {
 		if ( is_admin() && ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) ) {
-			return false;
+			return;
 		}
 
 		$this->rules    = $rules;
